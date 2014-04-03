@@ -29,22 +29,6 @@
  		<tag>HEAD</tag>
  		<url>https://github.com/fiji/AnalyzeSkeleton</url>
  	</scm>
-	<developers>
-		<developer>
-			<id>iarganda</id>
-			<name>Ignacio Arganda-Carreras</name>
-			<email>ignacio.arganda@gmail.com</email>
-			<url>http://biocomp.cnb.csic.es/~iarganda/index_EN.html</url>
-			<organization>INRA</organization>
-			<organizationUrl>http://www-ijpb.versailles.inra.fr/en/bc/equipes/modelisation-imagerie/</organizationUrl>
-			<roles>
-				<role>architect</role>
-				<role>developer</role>
-			</roles>
-			<timezone>-6</timezone>
-		</developer>
-	</developers>
-
 	<repositories>
 		<!-- NB: for project parent, in case of partial checkout -->
 		<repository>
