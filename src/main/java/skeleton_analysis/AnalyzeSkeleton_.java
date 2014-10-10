@@ -15,6 +15,7 @@ import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
@@ -1841,15 +1842,15 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 		if(debug)
 			IJ.log("=== Mark Trees ===");
 		// Create output image
-		ImageStack outputImage = new ImageStack(this.width, this.height, taggedImage.getColorModel());	
+		ImageStack outputImage = new ImageStack( this.width, this.height );	
 		for (int z = 0; z < depth; z++)
 		{
-			outputImage.addSlice(taggedImage.getSliceLabel(z+1), new ShortProcessor(this.width, this.height));	
+			outputImage.addSlice(taggedImage.getSliceLabel(z+1), new FloatProcessor(this.width, this.height));	
 		}
 	
 		this.numOfTrees = 0;
 				
-		short color = 0;
+		int color = 0;
 	
 		// Visit trees starting at end points
 		for(int i = 0; i < this.totalNumberOfEndPoints; i++)
@@ -1861,10 +1862,10 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 			
 			color++;
 			
-			if(color == Short.MAX_VALUE)
+			if(color == Integer.MAX_VALUE)
 			{
-				IJ.error("More than " + (Short.MAX_VALUE-1) +
-						" skeletons in the image. AnalyzeSkeleton can only process up to "+ (Short.MAX_VALUE-1));
+				IJ.error("More than " + (Integer.MAX_VALUE-1) +
+						" skeletons in the image. AnalyzeSkeleton can only process up to "+ (Integer.MAX_VALUE-1));
 				return null;
 			}
 		
@@ -1986,7 +1987,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 	 * @return number of voxels in the tree
 	 */
 	private int visitTree(Point startingPoint, ImageStack outputImage,
-			short color) 
+			int color) 
 	{					
 		int numOfVoxels = 0;
 		
@@ -2966,10 +2967,10 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 	 * @param z z- coordinate (in image stacks the indexes start at 1)
 	 * @param value pixel value
 	 */
-	private void setPixel(ImageStack image, int x, int y, int z, short value)
+	private void setPixel(ImageStack image, int x, int y, int z, float value)
 	{
 		if(x >= 0 && x < this.width && y >= 0 && y < this.height && z >= 0 && z < this.depth)
-			((short[]) image.getPixels(z + 1))[x + y * this.width] = value;
+			((float[]) image.getPixels(z + 1))[x + y * this.width] = value;
 	} // end setPixel 	
 	
 
