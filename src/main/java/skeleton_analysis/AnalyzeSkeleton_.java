@@ -1,11 +1,5 @@
 package skeleton_analysis;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.ListIterator;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -17,6 +11,12 @@ import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.ListIterator;
 
 /**
  * AnalyzeSkeleton_ plugin for ImageJ and Fiji.
