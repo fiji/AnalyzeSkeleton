@@ -5,6 +5,7 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.GenericDialog;
+import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.PlugInFilter;
@@ -327,6 +328,29 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 			boolean silent,
 			boolean verbose)
 	{
+		return run(pruneIndex, pruneEnds, shortPath, origIP, silent, verbose, null);
+	}
+
+	/**
+	 * This method is intended for non-interactively using this plugin.
+	 * <p>
+	 * @param pruneIndex The pruneIndex, as asked by the initial gui dialog.
+	 * @param pruneEnds flag to prune end-point-ending branches
+	 * @param shortPath flag to calculate the longest shortest path
+	 * @param origIP original input image
+	 * @param silent
+	 * @param verbose flag to display running information
+	 * @param roi points inside this region are spared from elimination when pruning end branches
+	 */
+	public SkeletonResult run(
+			int pruneIndex,
+			boolean pruneEnds,
+			boolean shortPath,
+			ImagePlus origIP,
+			boolean silent,
+			boolean verbose,
+			Roi roi)
+	{
 		AnalyzeSkeleton_.pruneIndex = pruneIndex;
 		this.silent = silent;
 		AnalyzeSkeleton_.pruneEnds = pruneEnds;
@@ -368,7 +392,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 		 // prune ends
 		if (pruneEnds) 
 		{
-			pruneEndBranches(this.inputImage, this.taggedImage);
+			pruneEndBranches(this.inputImage, this.taggedImage, roi);
 		}
 		
 		// Prune cycles if necessary
@@ -596,13 +620,14 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 	}
 
 	/**
-	 * Prune end branches
+	 * Prune end branches outside the specified ROI
 	 *
 	 * @param stack input skeleton image
 	 * @param taggedImage tagged skeleton image
+	 * @param roi 'protective' ROI: points inside this region are spared from pruning
 	 *
 	 */
-	private void pruneEndBranches(ImageStack stack, ImageStack taggedImage) 
+	private void pruneEndBranches(ImageStack stack, ImageStack taggedImage, Roi roi)
 	{
 		if(debug)
 			IJ.log("Pruning end-point branches...");
@@ -622,7 +647,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 			{
 				Vertex v = vit.next();
 				// Check if the vertex is an end point
-				if (v.getBranches().size() == 1 && isEndPoint( v.getPoints().get( 0 ) ) )
+				if (v.getBranches().size() == 1 && isEndPoint( v.getPoints().get( 0 ), roi) )
 				{
 					if(debug)
 						IJ.log("Pruning branch starting at " + v.getPoints().get(0));
@@ -2469,6 +2494,28 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 		return getPixel(this.taggedImage, point.x, point.y, point.z) == AnalyzeSkeleton_.END_POINT;
 	}	
 	
+	/* -----------------------------------------------------------------------*/
+	/**
+	 * Check if the point is an end point.
+	 *
+	 * @param point actual point
+	 * @param roi Only points outside this region will have end-point status
+	 * @return true if the point has end-point status
+	 */
+	private boolean isEndPoint(Point point, Roi roi)
+	{
+		if (roi == null)
+		{
+			return isEndPoint(point);
+		}
+		else
+		{
+			return getPixel(this.taggedImage, point.x, point.y, point.z) == AnalyzeSkeleton_.END_POINT
+					&& !roi.contains(point.x, point.y);
+			//TODO: Should we consider ROI's slice?: roi.getZPosition() != point.z;
+		}
+	}
+
 	/* -----------------------------------------------------------------------*/
 	/**
 	 * Check if the point is a junction.
