@@ -2504,16 +2504,16 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 	 */
 	private boolean isEndPoint(Point point, Roi roi)
 	{
-		if (roi == null)
+		boolean endPoint = isEndPoint(point);
+		if (endPoint && roi != null)
 		{
-			return isEndPoint(point);
+			// Is roi associated with all the images in the ImageStack?
+			boolean roiContainsZ = (roi.getPosition()==0) ? true : roi.getPosition()==point.z;
+
+			// Maintain end-point status only if point lies outside roi boundaries
+			endPoint = !(roi.contains(point.x, point.y) && roiContainsZ);
 		}
-		else
-		{
-			return getPixel(this.taggedImage, point.x, point.y, point.z) == AnalyzeSkeleton_.END_POINT
-					&& !roi.contains(point.x, point.y);
-			//TODO: Should we consider ROI's slice?: roi.getZPosition() != point.z;
-		}
+		return endPoint;
 	}
 
 	/* -----------------------------------------------------------------------*/
