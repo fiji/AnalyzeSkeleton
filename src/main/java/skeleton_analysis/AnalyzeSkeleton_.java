@@ -158,6 +158,9 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 	 /** dead-end pruning option */
 	public static boolean pruneEnds = false;
 	
+	/** protective-ROI option (branches inside ROI are spared from pruning) */
+	public static boolean protectRoi = false;
+
 	/** calculate largest shortest path option */
 	public static boolean calculateShortestPath = false;
 	
@@ -238,6 +241,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 		gd.addChoice("Prune cycle method: ", AnalyzeSkeleton_.pruneCyclesModes, 
 										AnalyzeSkeleton_.pruneCyclesModes[pruneIndex]);
 		gd.addCheckbox("Prune ends", pruneEnds);
+		gd.addCheckbox("Exclude ROI from pruning", protectRoi);
 		gd.addCheckbox("Calculate largest shortest path", calculateShortestPath);
 		gd.addCheckbox("Show detailed info", AnalyzeSkeleton_.verbose);
 		gd.showDialog();
@@ -247,6 +251,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 			return;
 		pruneIndex = gd.getNextChoiceIndex();
 		pruneEnds = gd.getNextBoolean();
+		protectRoi = gd.getNextBoolean();
 		calculateShortestPath = gd.getNextBoolean();
 		AnalyzeSkeleton_.verbose = gd.getNextBoolean();
 		
@@ -300,7 +305,8 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 
 		// now we have all the information that's needed for running the plugin
 		// as if it was called from somewhere else
-		run(pruneIndex, pruneEnds, calculateShortestPath, origIP, false, verbose);
+		run(pruneIndex, pruneEnds, calculateShortestPath, origIP, false,
+				verbose, (protectRoi) ? this.imRef.getRoi() : null);
 
 		if(debug)
 			IJ.log("num of skeletons = " + this.numOfTrees);
