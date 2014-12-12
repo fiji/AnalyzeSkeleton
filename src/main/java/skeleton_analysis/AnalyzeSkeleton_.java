@@ -4,15 +4,19 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.WindowManager;
+import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
 import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.PlugInFilter;
+import ij.plugin.frame.Recorder;
 import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 
+import java.awt.AWTEvent;
+import java.awt.Checkbox;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,7 +53,7 @@ import java.util.ListIterator;
  * @author Ignacio Arganda-Carreras <iarganda@mit.edu>
  *
  */
-public class AnalyzeSkeleton_ implements PlugInFilter
+public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 {
 	/** end point flag */
 	public static byte END_POINT = 30;
@@ -244,6 +248,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 		gd.addCheckbox("Exclude ROI from pruning", protectRoi);
 		gd.addCheckbox("Calculate largest shortest path", calculateShortestPath);
 		gd.addCheckbox("Show detailed info", AnalyzeSkeleton_.verbose);
+		dialogItemChanged(gd, null);
 		gd.showDialog();
 		
 		// Exit when canceled
@@ -315,6 +320,18 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 		showResults();
 
 	} // end run method
+
+	/** Disables dialog components that are irrelevant to GUI-based analysis. */
+	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
+	{
+		if (this.imRef.getRoi()==null)
+		{
+			Checkbox roiOption = (Checkbox)gd.getCheckboxes().elementAt(1);
+			roiOption.setEnabled(false);
+			if (Recorder.record) roiOption.setState(false);
+		}
+		return true;
+	}
 
 	/**
 	 * This method is intended for non-interactively using this plugin.
