@@ -376,7 +376,10 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	 * @param origIP original input image
 	 * @param silent
 	 * @param verbose flag to display running information
-	 * @param roi points inside this region are spared from elimination when pruning end branches
+	 * @param roi points inside this region are spared from elimination when
+	 *            pruning end branches. ROI can be associated to a single image
+	 *            in the stack or all images as per {@link ij.gui.Roi#getPosition
+	 *            ij.gui.Roi.getPosition()}
 	 */
 	public SkeletonResult run(
 			int pruneIndex,
@@ -2532,10 +2535,12 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	
 	/* -----------------------------------------------------------------------*/
 	/**
-	 * Check if the point is an end point.
+	 * Check if the point is an 'unprotected' end point.
 	 *
 	 * @param point actual point
-	 * @param roi Only points outside this region will have end-point status
+	 * @param roi Only points outside this ROI will have end-point status. ROI
+	 *            can be associated to a single image in the stack (or all) as
+	 *            per {@link ij.gui.Roi#getPosition ij.gui.Roi.getPosition()}
 	 * @return true if the point has end-point status
 	 */
 	private boolean isEndPoint(Point point, Roi roi)
