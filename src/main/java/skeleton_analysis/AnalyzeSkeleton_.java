@@ -17,6 +17,7 @@ import ij.process.ImageProcessor;
 
 import java.awt.AWTEvent;
 import java.awt.Checkbox;
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -242,12 +243,24 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	public void run(ImageProcessor ip) 
 	{
 		GenericDialog gd = new GenericDialog("Analyze Skeleton");
+		Font headerFont = new Font("SansSerif", Font.BOLD, 12);
+
+		gd.setInsets(0, 0, 0);
+		gd.addMessage("Elimination of Loops:", headerFont);
 		gd.addChoice("Prune cycle method: ", AnalyzeSkeleton_.pruneCyclesModes, 
 										AnalyzeSkeleton_.pruneCyclesModes[pruneIndex]);
+
+		gd.setInsets(20, 0, -15); //default top inset for 1st checkbox is 15
+		gd.addMessage("Elimination of End-points:", headerFont);
 		gd.addCheckbox("Prune ends", pruneEnds);
 		gd.addCheckbox("Exclude ROI from pruning", protectRoi);
+
+		gd.setInsets(20, 0, 0); //default top inset for subsequent checkboxes is 0
+		gd.addMessage("Results and Output:", headerFont);
 		gd.addCheckbox("Calculate largest shortest path", calculateShortestPath);
 		gd.addCheckbox("Show detailed info", AnalyzeSkeleton_.verbose);
+
+		gd.addHelp("http://fiji.sc/AnalyzeSkeleton");
 		dialogItemChanged(gd, null);
 		gd.showDialog();
 		
