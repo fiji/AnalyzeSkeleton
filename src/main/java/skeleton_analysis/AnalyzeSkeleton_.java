@@ -4,14 +4,20 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.WindowManager;
+import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
+import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.PlugInFilter;
+import ij.plugin.frame.Recorder;
 import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 
+import java.awt.AWTEvent;
+import java.awt.Checkbox;
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,7 +54,7 @@ import java.util.ListIterator;
  * @author Ignacio Arganda-Carreras <iarganda@mit.edu>
  *
  */
-public class AnalyzeSkeleton_ implements PlugInFilter
+public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 {
 	/** end point flag */
 	public static byte END_POINT = 30;
@@ -157,6 +163,9 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 	 /** dead-end pruning option */
 	public static boolean pruneEnds = false;
 	
+	/** protective-ROI option (branches inside ROI are spared from pruning) */
+	public static boolean protectRoi = false;
+
 	/** calculate largest shortest path option */
 	public static boolean calculateShortestPath = false;
 	
@@ -234,11 +243,25 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 	public void run(ImageProcessor ip) 
 	{
 		GenericDialog gd = new GenericDialog("Analyze Skeleton");
+		Font headerFont = new Font("SansSerif", Font.BOLD, 12);
+
+		gd.setInsets(0, 0, 0);
+		gd.addMessage("Elimination of Loops:", headerFont);
 		gd.addChoice("Prune cycle method: ", AnalyzeSkeleton_.pruneCyclesModes, 
 										AnalyzeSkeleton_.pruneCyclesModes[pruneIndex]);
+
+		gd.setInsets(20, 0, -15); //default top inset for 1st checkbox is 15
+		gd.addMessage("Elimination of End-points:", headerFont);
 		gd.addCheckbox("Prune ends", pruneEnds);
+		gd.addCheckbox("Exclude ROI from pruning", protectRoi);
+
+		gd.setInsets(20, 0, 0); //default top inset for subsequent checkboxes is 0
+		gd.addMessage("Results and Output:", headerFont);
 		gd.addCheckbox("Calculate largest shortest path", calculateShortestPath);
 		gd.addCheckbox("Show detailed info", AnalyzeSkeleton_.verbose);
+
+		gd.addHelp("http://fiji.sc/AnalyzeSkeleton");
+		dialogItemChanged(gd, null);
 		gd.showDialog();
 		
 		// Exit when canceled
@@ -246,6 +269,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 			return;
 		pruneIndex = gd.getNextChoiceIndex();
 		pruneEnds = gd.getNextBoolean();
+		protectRoi = gd.getNextBoolean();
 		calculateShortestPath = gd.getNextBoolean();
 		AnalyzeSkeleton_.verbose = gd.getNextBoolean();
 		
@@ -299,7 +323,8 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 
 		// now we have all the information that's needed for running the plugin
 		// as if it was called from somewhere else
-		run(pruneIndex, pruneEnds, calculateShortestPath, origIP, false, verbose);
+		run(pruneIndex, pruneEnds, calculateShortestPath, origIP, false,
+				verbose, (protectRoi) ? this.imRef.getRoi() : null);
 
 		if(debug)
 			IJ.log("num of skeletons = " + this.numOfTrees);
@@ -308,6 +333,18 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 		showResults();
 
 	} // end run method
+
+	/** Disables dialog components that are irrelevant to GUI-based analysis. */
+	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
+	{
+		if (this.imRef.getRoi()==null)
+		{
+			Checkbox roiOption = (Checkbox)gd.getCheckboxes().elementAt(1);
+			roiOption.setEnabled(false);
+			if (Recorder.record) roiOption.setState(false);
+		}
+		return true;
+	}
 
 	/**
 	 * This method is intended for non-interactively using this plugin.
@@ -326,6 +363,32 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 			ImagePlus origIP,
 			boolean silent,
 			boolean verbose)
+	{
+		return run(pruneIndex, pruneEnds, shortPath, origIP, silent, verbose, null);
+	}
+
+	/**
+	 * This method is intended for non-interactively using this plugin.
+	 * <p>
+	 * @param pruneIndex The pruneIndex, as asked by the initial gui dialog.
+	 * @param pruneEnds flag to prune end-point-ending branches
+	 * @param shortPath flag to calculate the longest shortest path
+	 * @param origIP original input image
+	 * @param silent
+	 * @param verbose flag to display running information
+	 * @param roi points inside this region are spared from elimination when
+	 *            pruning end branches. ROI can be associated to a single image
+	 *            in the stack or all images as per {@link ij.gui.Roi#getPosition
+	 *            ij.gui.Roi.getPosition()}
+	 */
+	public SkeletonResult run(
+			int pruneIndex,
+			boolean pruneEnds,
+			boolean shortPath,
+			ImagePlus origIP,
+			boolean silent,
+			boolean verbose,
+			Roi roi)
 	{
 		AnalyzeSkeleton_.pruneIndex = pruneIndex;
 		this.silent = silent;
@@ -368,7 +431,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 		 // prune ends
 		if (pruneEnds) 
 		{
-			pruneEndBranches(this.inputImage, this.taggedImage);
+			pruneEndBranches(this.inputImage, this.taggedImage, roi);
 		}
 		
 		// Prune cycles if necessary
@@ -596,13 +659,14 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 	}
 
 	/**
-	 * Prune end branches
+	 * Prune end branches outside the specified ROI
 	 *
 	 * @param stack input skeleton image
 	 * @param taggedImage tagged skeleton image
+	 * @param roi 'protective' ROI: points inside this region are spared from pruning
 	 *
 	 */
-	private void pruneEndBranches(ImageStack stack, ImageStack taggedImage) 
+	private void pruneEndBranches(ImageStack stack, ImageStack taggedImage, Roi roi)
 	{
 		if(debug)
 			IJ.log("Pruning end-point branches...");
@@ -622,7 +686,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 			{
 				Vertex v = vit.next();
 				// Check if the vertex is an end point
-				if (v.getBranches().size() == 1 && isEndPoint( v.getPoints().get( 0 ) ) )
+				if (v.getBranches().size() == 1 && isEndPoint( v.getPoints().get( 0 ), roi) )
 				{
 					if(debug)
 						IJ.log("Pruning branch starting at " + v.getPoints().get(0));
@@ -2469,6 +2533,30 @@ public class AnalyzeSkeleton_ implements PlugInFilter
 		return getPixel(this.taggedImage, point.x, point.y, point.z) == AnalyzeSkeleton_.END_POINT;
 	}	
 	
+	/* -----------------------------------------------------------------------*/
+	/**
+	 * Check if the point is an 'unprotected' end point.
+	 *
+	 * @param point actual point
+	 * @param roi Only points outside this ROI will have end-point status. ROI
+	 *            can be associated to a single image in the stack (or all) as
+	 *            per {@link ij.gui.Roi#getPosition ij.gui.Roi.getPosition()}
+	 * @return true if the point has end-point status
+	 */
+	private boolean isEndPoint(Point point, Roi roi)
+	{
+		boolean endPoint = isEndPoint(point);
+		if (endPoint && roi != null)
+		{
+			// Is roi associated with all the images in the ImageStack?
+			boolean roiContainsZ = (roi.getPosition()==0) ? true : roi.getPosition()==point.z;
+
+			// Maintain end-point status only if point lies outside roi boundaries
+			endPoint = !(roi.contains(point.x, point.y) && roiContainsZ);
+		}
+		return endPoint;
+	}
+
 	/* -----------------------------------------------------------------------*/
 	/**
 	 * Check if the point is a junction.
