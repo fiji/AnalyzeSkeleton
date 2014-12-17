@@ -465,7 +465,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			this.shortestPathPoints = new ArrayList [ this.numOfTrees ];
 			
 			// Visit skeleton and measure distances.
-			// and apply warshall algorithm
+			// and apply Warshall algorithm
 			spStartPosition = new double[this.numOfTrees][3];
 			for(int i = 0; i < this.numOfTrees; i++)
 			{							
@@ -592,7 +592,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			this.shortestPathPoints = new ArrayList [ this.numOfTrees ];
 			
 			// Visit skeleton and measure distances.
-			// and apply warshall algorithm
+			// and apply Warshall algorithm
 			spStartPosition = new double[this.numOfTrees][3];
 			for(int i = 0; i < this.numOfTrees; i++)
 			{							
@@ -648,7 +648,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	}
 	
 	/**
-	 * A simpler standalone running method, for analyzation without pruning
+	 * A simpler standalone running method, for analysis without pruning
 	 * or showing images.
 	 * <p>
 	 * This one just calls run(AnalyzeSkeleton_.NONE, false, null, true, false)
@@ -1239,7 +1239,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	/**
 	 * Display tag image on a new window.
 	 * 
-	 * @param taggedImage tag image to be diplayed
+	 * @param taggedImage tag image to be displayed
 	 */
 	void displayTagImage(ImageStack taggedImage)
 	{
