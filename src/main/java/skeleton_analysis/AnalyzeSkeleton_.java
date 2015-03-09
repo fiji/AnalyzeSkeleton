@@ -107,6 +107,9 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	private ImageStack shortPathImage = null;
 	
 	// Tree fields
+	/** image stack containing all skeletons marked with their corresponding id */
+	ImageStack trees = null;
+	
 	/** number of branches for every specific tree */
 	private int[] numberOfBranches = null;
 	/** number of end points voxels of every tree */
@@ -953,7 +956,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		}
 
 		// Mark trees
-		ImageStack treeIS = markTrees(taggedImage);
+		trees = markTrees(taggedImage);
 		
 		if(this.numOfTrees == 0)
 			return;
@@ -963,7 +966,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		                                      
 		// Divide groups of end-points and junction voxels
 		if(this.numOfTrees > 1)
-			divideVoxelsByTrees(treeIS);
+			divideVoxelsByTrees( trees );
 		if(this.numOfTrees == 1)
 		{
 			if(debug)
@@ -976,14 +979,14 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		}
 		
 		// Calculate number of junctions (skipping neighbor junction voxels)
-		groupJunctions(treeIS);						
+		groupJunctions( trees );						
 		
 		// Mark all unvisited
 		resetVisited();
 		
 		// Visit skeleton and measure distances.
 		for(int i = 0; i < this.numOfTrees; i++)
-			visitSkeleton(taggedImage, treeIS, i+1);
+			visitSkeleton(taggedImage, trees, i+1);
 		
 	} // end method processSkeleton
 
@@ -3339,6 +3342,16 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 
 	}
 	// end method reconstructPath
-	
+
+	/**
+	 * Get the stack containing all the trees labeld with their corresponding
+	 * skeleton id.
+	 *  
+	 * @return labeled-skeleton image stack
+	 */
+	public ImageStack getTrees()
+	{
+		return trees;
+	}
 
 }// end class AnalyzeSkeleton_
