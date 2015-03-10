@@ -216,6 +216,9 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	/** debugging flag */
 	private static final boolean debug = false;
 	
+	/** flag to output the labeled skeletons in a new image */
+	public static boolean displaySkeletons = false;
+	
 	/* -----------------------------------------------------------------------*/
 	/**
 	 * This method is called once when the filter is loaded.
@@ -262,6 +265,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		gd.addMessage("Results and Output:", headerFont);
 		gd.addCheckbox("Calculate largest shortest path", calculateShortestPath);
 		gd.addCheckbox("Show detailed info", AnalyzeSkeleton_.verbose);
+		gd.addCheckbox("Display labeled skeletons", AnalyzeSkeleton_.displaySkeletons);
 
 		gd.addHelp("http://fiji.sc/AnalyzeSkeleton");
 		dialogItemChanged(gd, null);
@@ -275,6 +279,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		protectRoi = gd.getNextBoolean();
 		calculateShortestPath = gd.getNextBoolean();
 		AnalyzeSkeleton_.verbose = gd.getNextBoolean();
+		AnalyzeSkeleton_.displaySkeletons = gd.getNextBoolean();
 		
 		// pre-checking if another image is needed and also setting bPruneCycles
 		ImagePlus origIP = null;
@@ -332,6 +337,16 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		if(debug)
 			IJ.log("num of skeletons = " + this.numOfTrees);
 
+		// Show labeled skeletons
+		if( AnalyzeSkeleton_.displaySkeletons )
+		{
+			ImagePlus labeledSkeletons = 
+					new ImagePlus( this.imRef.getShortTitle() 
+							+ "-labeled-skeletons", this.trees );
+			IJ.run( labeledSkeletons, "Fire", null );
+			labeledSkeletons.show();
+		}
+		
 		// Show results table
 		showResults();
 
