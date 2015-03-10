@@ -48,7 +48,7 @@ import java.util.ListIterator;
  * 2D/3D skeleton images.
  * <p>
  * For more detailed information, visit the AnalyzeSkeleton home page:
- * <A target="_blank" href="http://fiji.sc/wiki/index.php/AnalyzeSkeleton">http://fiji.sc/wiki/index.php/AnalyzeSkeleton</A>
+ * <A target="_blank" href="http://fiji.sc/AnalyzeSkeleton">http://fiji.sc/AnalyzeSkeleton</A>
  *
  *
  * @author Ignacio Arganda-Carreras <iarganda@mit.edu>
