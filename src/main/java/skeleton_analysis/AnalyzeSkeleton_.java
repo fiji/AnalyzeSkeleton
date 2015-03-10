@@ -108,7 +108,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	
 	// Tree fields
 	/** image stack containing all skeletons marked with their corresponding id */
-	ImageStack trees = null;
+	ImageStack labeledSkeletons = null;
 	
 	/** number of branches for every specific tree */
 	private int[] numberOfBranches = null;
@@ -342,7 +342,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		{
 			ImagePlus labeledSkeletons = 
 					new ImagePlus( this.imRef.getShortTitle() 
-							+ "-labeled-skeletons", this.trees );
+							+ "-labeled-skeletons", this.labeledSkeletons );
 			IJ.run( labeledSkeletons, "Fire", null );
 			labeledSkeletons.show();
 		}
@@ -971,7 +971,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		}
 
 		// Mark trees
-		trees = markTrees(taggedImage);
+		labeledSkeletons = markTrees(taggedImage);
 		
 		if(this.numOfTrees == 0)
 			return;
@@ -981,7 +981,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		                                      
 		// Divide groups of end-points and junction voxels
 		if(this.numOfTrees > 1)
-			divideVoxelsByTrees( trees );
+			divideVoxelsByTrees( labeledSkeletons );
 		if(this.numOfTrees == 1)
 		{
 			if(debug)
@@ -994,14 +994,14 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		}
 		
 		// Calculate number of junctions (skipping neighbor junction voxels)
-		groupJunctions( trees );						
+		groupJunctions( labeledSkeletons );						
 		
 		// Mark all unvisited
 		resetVisited();
 		
 		// Visit skeleton and measure distances.
 		for(int i = 0; i < this.numOfTrees; i++)
-			visitSkeleton(taggedImage, trees, i+1);
+			visitSkeleton(taggedImage, labeledSkeletons, i+1);
 		
 	} // end method processSkeleton
 
@@ -3364,9 +3364,9 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	 *  
 	 * @return labeled-skeleton image stack
 	 */
-	public ImageStack getTrees()
+	public ImageStack getLabeledSkeletons()
 	{
-		return trees;
+		return labeledSkeletons;
 	}
 
 }// end class AnalyzeSkeleton_
