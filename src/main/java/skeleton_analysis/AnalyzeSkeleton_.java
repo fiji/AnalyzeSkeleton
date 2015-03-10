@@ -66,7 +66,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	public static byte SHORTEST_PATH = 96; 
 	
 	/** working image plus */
-	private ImagePlus imRef;
+	private ImagePlus imRef = null;
 
 	/** working image width */
 	private int width = 0;
