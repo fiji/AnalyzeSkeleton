@@ -1,3 +1,5 @@
+![](http://jenkins.imagej.net/job/AnalyzeSkeleton/lastBuild/badge/icon)
+
 AnalyzeSkeleton
 ===============
 This plugin tags all pixel/voxels in a skeleton image and then counts all its junctions, triple and quadruple points and branches, and measures their average and maximum length. The tags are shown in a new window displaying every tag in a different color. You can find it under Plugins>Skeleton>Analyze Skeleton (2D/3D).
