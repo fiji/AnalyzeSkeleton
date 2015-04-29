@@ -1,4 +1,4 @@
-![](http://jenkins.imagej.net/job/AnalyzeSkeleton/lastBuild/badge/icon)
+[![](http://jenkins.imagej.net/job/AnalyzeSkeleton/lastBuild/badge/icon)](http://jenkins.imagej.net/job/AnalyzeSkeleton/)
 
 AnalyzeSkeleton
 ===============
