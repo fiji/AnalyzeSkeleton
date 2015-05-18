@@ -29,6 +29,7 @@
 			<roles>
 				<role>architect</role>
 				<role>developer</role>
+				<role>maintainer</role>
 			</roles>
 			<timezone>-6</timezone>
 		</developer>
