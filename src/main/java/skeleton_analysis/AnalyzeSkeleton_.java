@@ -3128,6 +3128,16 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 
 		ArrayList< Edge > edgeList = graph.getEdges();
 		ArrayList< Vertex > vertexList = graph.getVertices();
+		
+		// check for paths of only one vertex
+		if( vertexList.size() == 1 )
+		{
+			shortestPathPoints.add( vertexList.get( 0 ).getPoints().get( 0 ) );
+			spx = vertexList.get( 0 ).getPoints().get( 0 ).x;
+			spy = vertexList.get( 0 ).getPoints().get( 0 ).y;
+			spz = vertexList.get( 0 ).getPoints().get( 0 ).z;
+			return 0;
+		}
 
 		//create empty adjacency and predecessor matrix
 
