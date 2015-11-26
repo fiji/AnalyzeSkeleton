@@ -1,4 +1,4 @@
-package skeleton_analysis;
+package sc.fiji.analyzeSkeleton;
 
 import java.util.ArrayList;
 import java.util.Stack;
