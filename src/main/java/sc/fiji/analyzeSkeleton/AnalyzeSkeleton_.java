@@ -330,7 +330,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		{
 			ImagePlus labeledSkeletons = 
 					new ImagePlus( this.imRef.getShortTitle() 
-							+ "-labeled-skeletons", this.labeledSkeletons );
+							+ "-labeled-skeletons", this.labeledSkeletons.duplicate() );
 			IJ.run( labeledSkeletons, "Fire", null );
 			labeledSkeletons.show();
 		}
@@ -613,7 +613,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			
 			if (!silent) {
 				// Display short paths in a new stack
-				ImagePlus shortIP = new ImagePlus("Longest shortest paths", shortPathImage);
+				ImagePlus shortIP = new ImagePlus("Longest shortest paths", shortPathImage.duplicate());
 				shortIP.show();
 
 				// Set same calibration as the input image
