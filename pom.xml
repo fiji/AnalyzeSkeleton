@@ -78,7 +78,10 @@
 			<url>http://imagej.net/User:Tiago</url>
 			<properties><id>tferr</id></properties>
 		</contributor>
-		<contributor><name>Daniel Hornung</name></contributor>
+		<contributor>
+			<name>Daniel Hornung</name>
+			<url>http://imagej.net/User:Hornung</url>
+		</contributor>
 		<contributor><name>Huub Hovens</name></contributor>
 	</contributors>
 
