@@ -358,7 +358,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	 * @param pruneIndex The pruneIndex, as asked by the initial gui dialog.
 	 * @param pruneEnds flag to prune end-point-ending branches
 	 * @param shortPath flag to calculate the longest shortest path
-	 * @param origIP original input image
+	 * @param origIP original grayscale input image (for lowest pixel intensity pruning mode)
 	 * @param silent 
 	 * @param verbose flag to display running information 
 	 */
@@ -379,7 +379,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	 * @param pruneIndex The pruneIndex, as asked by the initial gui dialog.
 	 * @param pruneEnds flag to prune end-point-ending branches
 	 * @param shortPath flag to calculate the longest shortest path
-	 * @param origIP original input image
+	 * @param origIP original grayscale input image (for lowest pixel intensity pruning mode)
 	 * @param silent
 	 * @param verbose flag to display running information
 	 * @param roi points inside this region are spared from elimination when
