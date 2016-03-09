@@ -1,10 +1,7 @@
 package sc.fiji.analyzeSkeleton;
 
-import ij.IJ;
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.Prefs;
-import ij.WindowManager;
+import ij.*;
+
 import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
 import ij.gui.Roi;
