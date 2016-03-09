@@ -3,8 +3,7 @@ package skeleton_analysis;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
-import sc.fiji.analyzeSkeleton.*;
-//Hallo Ralf
+
 public class BasicTest {
 
 	/**
