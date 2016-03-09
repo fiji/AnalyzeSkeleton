@@ -44,6 +44,13 @@ public class Edge
 	private ArrayList <Point> slabs = null;
 	/** length of the edge */
 	private double length = 0;
+	/** average color of edge */
+	private double color = 0;
+	/** average color of inner third of  edge */
+	private double color3rd = 0;
+	/** length calculated by running average ovr 5 Pixel */
+	private double length_ra = 0;
+	
 
 	/**
 	 * Create an edge of specific vertices and list of slab voxels.
@@ -63,6 +70,36 @@ public class Edge
 		this.slabs = slabs;
 		this.length = length;
 	}
+
+	/**
+	 * Create an edge of specific vertices and list of slab voxels.
+	 * @param v1 first vertex
+	 * @param v2 second vertex
+	 * @param slabs list of slab voxels
+	 * @param length calibrated edge length
+	 * @param color3rd average color value of the inner third
+	 * @param color average color value
+	 * @param length_ra calibrated edge length calculated with running average ofer 5 Pixel
+	 */
+	public Edge(
+			Vertex v1, 
+			Vertex v2, 
+			ArrayList<Point> slabs,
+			double length,
+			double color3rd,
+			double color,
+			double length_ra)
+	{
+		this.v1 = v1;
+		this.v2 = v2;
+		this.slabs = slabs;
+		this.length = length;
+		this.color = color;
+		this.color3rd = color3rd;
+		this.length_ra = length_ra;
+		
+	}
+	
 	/**
 	 * Get first vertex. 
 	 * @return first vertex of the edge
@@ -134,6 +171,38 @@ public class Edge
 	public double getLength()
 	{
 		return this.length;
+	}
+	
+	/**
+	 * Get edge length_ra (running average)
+	 * @return calibrated edge length (running average)
+	 */
+	public double getLength_ra()
+	{
+		return this.length_ra;
+	}
+	
+	
+	public void setColor(double color)
+	{
+		this.color = color;
+	}
+	
+	
+	public double getColor()
+	{
+		return this.color;
+	}
+	
+	public void setColor3rd(double color)
+	{
+		this.color3rd = color;
+	}
+	
+	
+	public double getColor3rd()
+	{
+		return this.color3rd;
 	}
 	
 }// end class Edge

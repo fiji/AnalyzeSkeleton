@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 
 /**
@@ -1381,7 +1382,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			
 			final String[] extra_head = {"Branch", "Skeleton ID", 
 							"Branch length","V1 x", "V1 y",
-							"V1 z","V2 x","V2 y", "V2 z", "Euclidean distance"};
+							"V1 z","V2 x","V2 y", "V2 z", "Euclidean distance","running average length", "avg color (inner 3rd)", "avg color"};
 			
 	
 			// Edge comparator (by branch length)
@@ -1419,6 +1420,9 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 					extra_rt.addValue(extra_head[7], e.getV2().getPoints().get(0).y * this.imRef.getCalibration().pixelHeight);
 					extra_rt.addValue(extra_head[8], e.getV2().getPoints().get(0).z * this.imRef.getCalibration().pixelDepth);
 					extra_rt.addValue(extra_head[9], this.calculateDistance(e.getV1().getPoints().get(0), e.getV2().getPoints().get(0)));
+					extra_rt.addValue(extra_head[10], e.getLength_ra());
+					extra_rt.addValue(extra_head[11], e.getColor3rd());
+					extra_rt.addValue(extra_head[12], e.getColor());
 				}		
 											
 			}
@@ -1544,7 +1548,12 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			this.slabList = new ArrayList<Point>();
 					 
 			// Otherwise, visit branch until next junction or end point.
-			double length = visitBranch(endPointCoord, iTree);
+			double[] properties = visitBranch(endPointCoord, iTree);
+			double length = properties[0];
+			double color3rd = properties[1];
+			double color = properties[2];
+			double length_ra = properties[3];
+
 						
 			// If length is 0, it means the tree is formed by only one voxel.
 			if(length == 0)
@@ -1564,7 +1573,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 					if(debug)
 						IJ.log( "adding branch from " + v1.getPoints().get(0) + " to " + this.auxFinalVertex.getPoints().get(0) );
 					this.graph[iTree].addVertex(this.auxFinalVertex);
-					this.graph[iTree].addEdge(new Edge(v1, this.auxFinalVertex, this.slabList, length));
+					this.graph[iTree].addEdge(new Edge(v1, this.auxFinalVertex, this.slabList, length, color3rd, color, length_ra));
 					// increase number of branches
 					this.numberOfBranches[iTree]++;
 					
@@ -1606,7 +1615,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			if(debug)
 				IJ.log("adding branch from " + v1.getPoints().get(0) + " to " + this.auxFinalVertex.getPoints().get(0) +  ", aux point = " + this.auxPoint);
 			this.graph[iTree].addVertex(this.auxFinalVertex);
-			this.graph[iTree].addEdge(new Edge(v1, this.auxFinalVertex, this.slabList, length));
+			this.graph[iTree].addEdge(new Edge(v1, this.auxFinalVertex, this.slabList, length, color3rd, color, length_ra));
 			
 			// increase number of branches
 			this.numberOfBranches[iTree]++;
@@ -1665,7 +1674,13 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 
 						// Visit branch
 						this.auxPoint = null;
-						length += visitBranch(nextPoint, iTree);
+						
+						double[] properties = visitBranch(nextPoint, iTree);
+						length += properties[0];
+						double color3rd = properties[1];
+						double color = properties[2];
+						double length_ra = properties[3];
+
 
 						// Increase total length of branches
 						branchLength += length;
@@ -1724,7 +1739,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 							// Add branch to graph
 							if(debug)
 								IJ.log("adding branch from " + initialVertex.getPoints().get(0) + " to " + this.auxFinalVertex.getPoints().get(0));							
-							this.graph[iTree].addEdge(new Edge(initialVertex, this.auxFinalVertex, this.slabList, length));												
+							this.graph[iTree].addEdge(new Edge(initialVertex, this.auxFinalVertex, this.slabList, length, color3rd, color, length_ra));												
 						}
 					}
 					else
@@ -1758,7 +1773,11 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			this.numberOfSlabs[iTree]++;
 			
 			// visit branch until finding visited voxel.
-			final double length = visitBranch(startCoord, iTree);
+			double[] properties = visitBranch(startCoord, iTree);
+			final double length = properties[0];
+			double color3rd = properties[1];
+			double color = properties[2];
+			double length_ra = properties[3];
 						
 			if(length != 0)
 			{				
@@ -1774,7 +1793,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			}
 			
 			// Create circular edge
-			this.graph[iTree].addEdge(new Edge(v1, v1, this.slabList, length));
+			this.graph[iTree].addEdge(new Edge(v1, v1, this.slabList, length, color3rd, color, length_ra));
 		}						
 
 		if(debug)
@@ -2090,12 +2109,20 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	 * 
 	 * @param startingPoint starting coordinates
 	 * @param iTree tree index
-	 * @return branch length
+	 * @return branch length and color
 	 */
-	private double visitBranch(Point startingPoint, int iTree) 
+	private double[] visitBranch(Point startingPoint, int iTree) 
 	{
 		//IJ.log("startingPoint = (" + startingPoint.x + ", " + startingPoint.y + ", " + startingPoint.z + ")");
 		double length = 0;
+		double color = 0.0;
+		double color3rd = 0.0;
+		double length_ra = 0.0;
+		double[] ret = new double[4];
+		
+		List<Point> pointHistory= new ArrayList<Point>(0);
+		pointHistory.add(0,startingPoint);
+		
 		
 		// mark starting point as visited
 		setVisited(startingPoint, true);
@@ -2104,7 +2131,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		Point nextPoint = getNextUnvisitedVoxel(startingPoint);
 		
 		if (nextPoint == null)
-			return 0;
+			return ret;
 		
 		Point previousPoint = startingPoint;
 		
@@ -2118,6 +2145,9 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			
 			// Add length
 			length += calculateDistance(previousPoint, nextPoint);
+			pointHistory.add(0,nextPoint);
+
+			length_ra += calculateDistance(pointHistory);
 			
 			// Mark as visited
 			setVisited(nextPoint, true);
@@ -2135,6 +2165,9 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		{
 			// Add distance to last point
 			length += calculateDistance(previousPoint, nextPoint);
+			pointHistory.add(0,nextPoint);
+			length_ra += calculateDistance(pointHistory);
+
 		
 			// Mark last point as visited
 			setVisited(nextPoint, true);
@@ -2155,6 +2188,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 				// Add the length to the first point of the vertex (to prevent later from having
 				// euclidean distances larger than the actual distance)
 				length += calculateDistance(auxFinalVertex.getPoints().get(0), nextPoint);
+				length_ra += calculateDistance(auxFinalVertex.getPoints().get(0), nextPoint);
 				/*
 				int j = 0;
 				for(j = 0; j < this.junctionVertex[iTree].length; j++)
@@ -2175,8 +2209,36 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			this.auxPoint = previousPoint;
 		
 		//IJ.log("finalPoint = (" + nextPoint.x + ", " + nextPoint.y + ", " + nextPoint.z + ")");
-		return length;
-	} // end visitBranch	
+		
+		// calculate average color (thickness) value, but only take the inner third of a branch.
+		// at both ends the color (thickness) is most likely affected by junctions.
+		
+
+		int size = pointHistory.size();
+		int start = (int)(size/3.0);
+		int end = (int)(2*size/3.0);
+		
+		for (int i = 0; i < size ;i++){
+			int value = getPixel(this.inputImage, pointHistory.get(i));
+			if (value < 0){
+				value += 256;
+			}
+			color += value;
+			if (i>=start && i<end){
+				color3rd += value;
+			}
+		}
+		
+		color /= size; 
+		color3rd /= (end-start);
+		
+		ret[0] = length;
+		ret[1] = color3rd;
+		ret[2] = color;
+		ret[3] = length_ra;
+		
+		return ret;
+	} // end visitBranch
 	
 	// -----------------------------------------------------------------------
 	/**
@@ -2215,7 +2277,34 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 				          + Math.pow( (point1.y - point2.y) * this.imRef.getCalibration().pixelHeight, 2)
 				          + Math.pow( (point1.z - point2.z) * this.imRef.getCalibration().pixelDepth, 2));
 	}
-
+	
+	// -----------------------------------------------------------------------
+		/**
+		 * Calculate linear corrected distance between two points in 3D.
+		 * Uses the PointHistory of a branch and its 5 last points.
+		 * 
+		 * @param Points - the last visited Points (most recent has Index 0)
+		 * @return linear corrected distance between the last two Points (in the corresponding units)
+		 */
+	private double calculateDistance(List<Point> Points)
+	{
+		int indexOfLast = Points.size()-1;
+		
+		//no Distance to be calculated here...
+		if (indexOfLast < 1) return 0;
+		
+		// Point Of Interest
+		int poi = 5;
+		
+		//poi is indexOflast if List is shorter than 5
+		if (indexOfLast < 5){
+			poi = indexOfLast;
+		}
+		return Math.sqrt(  Math.pow( (Points.get(poi).x - Points.get(0).x) * this.imRef.getCalibration().pixelWidth, 2) 
+		          + Math.pow( (Points.get(poi).y - Points.get(0).y) * this.imRef.getCalibration().pixelHeight, 2)
+		          + Math.pow( (Points.get(poi).z - Points.get(0).z) * this.imRef.getCalibration().pixelDepth, 2))/poi;
+	}
+	
 	// -----------------------------------------------------------------------
 	/**
 	 * Calculate number of junction skipping neighbor junction voxels
