@@ -115,4 +115,17 @@
 			<artifactId>ij</artifactId>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<projectName>AnalyzeSkeleton_ plugin for ImageJ.</projectName>
+					<organizationName>Ignacio Arganda-Carreras.</organizationName>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
