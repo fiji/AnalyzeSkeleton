@@ -35,8 +35,8 @@ public class Vertex
 	private Edge precedessor = null;
 	/** DFS visit order */
 	private int visitOrder = -1;
-	
-	
+
+
 	// --------------------------------------------------------------------------
 	/**
 	 * Create empty vertex.
@@ -46,7 +46,7 @@ public class Vertex
 		this.points = new ArrayList < Point > ();
 		this.branches = new ArrayList<Edge>();
 	}
-	
+
 	// --------------------------------------------------------------------------
 	/**
 	 * Add point to the vertex.
@@ -78,7 +78,7 @@ public class Vertex
 		StringBuilder sb = new StringBuilder();
 		for(final Point p : this.points)
 			sb.append(p.toString() + " ");
-		
+
 		return sb.toString();
 	}
 	// --------------------------------------------------------------------------
@@ -100,7 +100,7 @@ public class Vertex
 	{
 		this.branches.add(e);
 	}
-	
+
 	// --------------------------------------------------------------------------
 	/**
 	 * Get branch list.
@@ -132,7 +132,7 @@ public class Vertex
 	{
 		this.visited = b;
 		this.visitOrder = visitOrder;
-	}	
+	}
 	/**
 	 * Check visit status.
 	 * @return true if the vertex was already visited (DFS)
@@ -165,5 +165,5 @@ public class Vertex
 	{
 		return this.visitOrder;
 	}
-	
+
 }// end class Vertex

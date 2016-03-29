@@ -28,14 +28,14 @@ import java.util.Stack;
  */
 public class Graph 
 {
-	/** list of edges */	
+	/** list of edges */
 	private ArrayList < Edge > edges = null;
 	/** list of vertices */
 	private ArrayList < Vertex > vertices = null;
-	
+
 	/** root vertex */
 	private Vertex root = null;
-	
+
 	// --------------------------------------------------------------------------
 	/**
 	 * Empty constructor.
@@ -45,7 +45,7 @@ public class Graph
 		this.edges = new ArrayList < Edge >();
 		this.vertices = new ArrayList<Vertex>();
 	}
-	
+
 	// --------------------------------------------------------------------------
 	/**
 	 * Add edge to the graph.
@@ -67,7 +67,7 @@ public class Graph
 			return true;
 		}
 	}// end method addEdge
-	
+
 	// --------------------------------------------------------------------------
 	/**
 	 * Add vertex to the graph.
@@ -102,7 +102,7 @@ public class Graph
 	{
 		return this.edges;
 	}
-	
+
 	// --------------------------------------------------------------------------
 	/**
 	 * Set root vertex.
@@ -119,8 +119,8 @@ public class Graph
 	public Vertex getRoot()
 	{
 		return this.root;
-	}	
-	
+	}
+
 	// --------------------------------------------------------------------------
 	/**
 	 * Depth first search method to detect cycles in the graph.
@@ -130,27 +130,27 @@ public class Graph
 	ArrayList<Edge> depthFirstSearch()
 	{
 		ArrayList<Edge> backEdges = new ArrayList<Edge>();
-		
+
 		// Create empty stack
 		Stack<Vertex> stack = new Stack<Vertex>();
-		
+
 		// Mark all vertices as non-visited
 		for(final Vertex v : this.vertices)
 			v.setVisited(false);
-		
+
 		// Push the root into the stack
-		stack.push(this.root);			
-		
+		stack.push(this.root);
+
 		int visitOrder = 0;
-		
+
 		while(!stack.empty())
 		{
 			Vertex u = stack.pop();
-			
-			if(!u.isVisited())						
+
+			if(!u.isVisited())
 			{
 				//IJ.log(" Visiting vertex " + u.getPoints().get(0));
-				
+
 				// If the vertex has not been visited yet, then
 				// the edge from the predecessor to this vertex
 				// is mark as TREE
@@ -168,7 +168,7 @@ public class Graph
 					if(e.getType() == Edge.UNDEFINED)
 					{
 						final Vertex ov = e.getOppositeVertex(u);
-						if(!ov.isVisited())						
+						if(!ov.isVisited())
 						{
 							stack.push(ov);
 							ov.setPredecessor(e);
@@ -178,14 +178,14 @@ public class Graph
 							e.setType(Edge.BACK);
 							backEdges.add(e);
 						}
-						
+
 					}
 				}
 			}
-		}	
-		
+		}
+
 		return backEdges;
-		
+
 	} // end method depthFirstSearch
-	
+
 }// end class Graph

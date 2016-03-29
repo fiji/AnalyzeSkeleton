@@ -25,13 +25,13 @@ package sc.fiji.analyzeSkeleton;
  */
 public class Point 
 {
-	/** x- coordinate */	
+	/** x- coordinate */
 	public int x = 0;
 	/** y- coordinate */
 	public int y = 0;
 	/** z- coordinate */
 	public int z = 0;
-	
+
 	/**
 	 * Create point from integer coordinates.
 	 * 
@@ -45,14 +45,14 @@ public class Point
 		this.y = y;
 		this.z = z;
 	}
-	
+
 	/**
 	 * Convert point to string.
 	 */
 	public String toString(){
 		return new String("(" + this.x + ", " + this.y + ", " + this.z + ")");
 	}
-	
+
 	/**
 	 * Override equals method to compare points.
 	 * @param o input object
@@ -63,11 +63,11 @@ public class Point
 		if (this == o) return true;
 
 		if (o == null || getClass() != o.getClass()) return false;
-		
-		
+
+
 		final Point p = (Point) o;
 		return p.x == this.x && p.y == this.y && p.z == this.z;
-	}	
-	
+	}
+
 
 }// end class point

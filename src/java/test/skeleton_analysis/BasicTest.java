@@ -14,14 +14,14 @@ public class BasicTest {
 	public static void main( final String[] args )
 	{
 		ImageJ.main( args );
-		
+
 		ImagePlus imp = IJ.openImage( 
 				AnalyzeSkeleton_.class.getResource( 
 						"/bat-cochlea-skeleton.zip" ).getFile() );
 		imp.show();
-		AnalyzeSkeleton_ skel = new AnalyzeSkeleton_();		
-		skel.setup("", imp);		
+		AnalyzeSkeleton_ skel = new AnalyzeSkeleton_();
+		skel.setup("", imp);
 		skel.run( null );
 	}
-	
+
 }

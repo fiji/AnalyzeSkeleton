@@ -32,10 +32,10 @@ public class Edge
 	public final static int BACK = 1;
 	/** not yet defined edge classification constant for Depth-first search (DFS) */
 	public final static int UNDEFINED = -1;
-	
+
 	/** DFS classification */
 	private int type = Edge.UNDEFINED;
-	
+
 	/** vertex at one extreme of the edge */
 	private Vertex v1 = null;
 	/** vertex at the other extreme of the edge */
@@ -50,7 +50,7 @@ public class Edge
 	private double color3rd = 0;
 	/** length calculated by running average ovr 5 Pixel */
 	private double length_ra = 0;
-	
+
 
 	/**
 	 * Create an edge of specific vertices and list of slab voxels.
@@ -97,9 +97,9 @@ public class Edge
 		this.color = color;
 		this.color3rd = color3rd;
 		this.length_ra = length_ra;
-		
+
 	}
-	
+
 	/**
 	 * Get first vertex. 
 	 * @return first vertex of the edge
@@ -154,7 +154,7 @@ public class Edge
 		else 
 			return null;
 	}
-	
+
 	/**
 	 * Set edge length
 	 * @param length calibrated edge length
@@ -172,7 +172,7 @@ public class Edge
 	{
 		return this.length;
 	}
-	
+
 	/**
 	 * Get edge length_ra (running average)
 	 * @return calibrated edge length (running average)
@@ -181,28 +181,28 @@ public class Edge
 	{
 		return this.length_ra;
 	}
-	
-	
+
+
 	public void setColor(double color)
 	{
 		this.color = color;
 	}
-	
-	
+
+
 	public double getColor()
 	{
 		return this.color;
 	}
-	
+
 	public void setColor3rd(double color)
 	{
 		this.color3rd = color;
 	}
-	
-	
+
+
 	public double getColor3rd()
 	{
 		return this.color3rd;
 	}
-	
+
 }// end class Edge
