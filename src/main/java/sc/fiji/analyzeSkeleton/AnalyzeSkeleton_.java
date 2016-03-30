@@ -1403,7 +1403,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 
 			final String[] extra_head = {"Branch", "Skeleton ID", 
 							"Branch length","V1 x", "V1 y",
-							"V1 z","V2 x","V2 y", "V2 z", "Euclidean distance","running average length", "avg color (inner 3rd)", "avg color"};
+							"V1 z","V2 x","V2 y", "V2 z", "Euclidean distance","running average length", "average intensity (inner 3rd)", "average intensity"};
 
 
 			// Edge comparator (by branch length)
@@ -2136,8 +2136,8 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	{
 		//IJ.log("startingPoint = (" + startingPoint.x + ", " + startingPoint.y + ", " + startingPoint.z + ")");
 		double length = 0;
-		double color = 0.0;
-		double color3rd = 0.0;
+		double intensity = 0.0;
+		double intensity3rd = 0.0;
 		double length_ra = 0.0;
 		double[] ret = new double[4];
 
@@ -2231,8 +2231,8 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 
 		//IJ.log("finalPoint = (" + nextPoint.x + ", " + nextPoint.y + ", " + nextPoint.z + ")");
 
-		// calculate average color (thickness) value, but only take the inner third of a branch.
-		// at both ends the color (thickness) is most likely affected by junctions.
+		// calculate average intensity (thickness) value, but only take the inner third of a branch.
+		// at both ends the intensity (thickness) is most likely affected by junctions.
 
 
 		int size = pointHistory.size();
@@ -2244,18 +2244,18 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			if (value < 0){
 				value += 256;
 			}
-			color += value;
+			intensity += value;
 			if (i>=start && i<end){
-				color3rd += value;
+				intensity3rd += value;
 			}
 		}
 
-		color /= size; 
-		color3rd /= (end-start);
+		intensity /= size; 
+		intensity3rd /= (end-start);
 
 		ret[0] = length;
-		ret[1] = color3rd;
-		ret[2] = color;
+		ret[1] = intensity3rd;
+		ret[2] = intensity;
 		ret[3] = length_ra;
 
 		return ret;
