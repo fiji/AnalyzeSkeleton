@@ -1271,7 +1271,13 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	 */
 	void displayTagImage(ImageStack taggedImage)
 	{
-		ImagePlus tagIP = new ImagePlus("Tagged skeleton", taggedImage.duplicate());
+		final int slices = imRef.getNSlices();
+		final int frames = imRef.getNFrames();
+		final int channels = imRef.getNChannels();
+
+		ImagePlus tagIP = IJ.createHyperStack("Tagged skeleton", width, height, channels, slices, frames,
+											  imRef.getBitDepth());
+		tagIP.setStack(taggedImage.duplicate(), channels, slices, frames);
 		tagIP.show();
 
 		// Set same calibration as the input image
