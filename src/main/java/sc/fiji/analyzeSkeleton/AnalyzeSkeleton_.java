@@ -3306,7 +3306,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		// remember a and b are indices and not the actual vertices.
 
 		int b = endIndex;
-		int a = startIndex;
+		final int a = startIndex;
 
 		while (b != a)
 		{
@@ -3339,16 +3339,10 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 				}
 
 			}
-
-			// add slab points of the shortest edge to the list of points
-			for (Point p : shortestedge.getSlabs())
-			{
-				shortestPathPoints.add(p);
-				setPixel(this.shortPathImage, p.x, p.y, p.z, SHORTEST_PATH);
-			}
-
-			// add vertex points too
-			for (Point p : shortestedge.getV1().getPoints())
+			// add vertex 1 points
+			Vertex v1 = shortestedge.getV2() != predecessor ?
+						shortestedge.getV2() : shortestedge.getV1();
+			for (Point p : v1.getPoints())
 			{
 				if( ! shortestPathPoints.contains( p ))
 				{
@@ -3357,7 +3351,21 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 				}
 			}
 
-			for (Point p : shortestedge.getV2().getPoints())
+			// add slab points of the shortest edge to the list of points
+			ArrayList<Point> slabs = shortestedge.getSlabs();
+			// reverse order if needed
+			if( shortestedge.getV2() != predecessor )
+				Collections.reverse( slabs );
+			for (Point p : slabs)
+			{
+				shortestPathPoints.add(p);
+				setPixel(this.shortPathImage, p.x, p.y, p.z, SHORTEST_PATH);
+			}
+
+			// add vertex 2 points too
+			Vertex v2 = shortestedge.getV2() != predecessor ?
+					shortestedge.getV1() : shortestedge.getV2();
+			for (Point p : v2.getPoints())
 			{
 				if( ! shortestPathPoints.contains( p ))
 				{
