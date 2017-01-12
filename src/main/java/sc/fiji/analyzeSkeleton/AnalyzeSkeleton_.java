@@ -2286,7 +2286,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 
 	// -----------------------------------------------------------------------
 	/**
-	 * Calculate distance between two points in 3D.
+	 * Calculate Euclidean distance between two points in 3D.
 	 * 
 	 * @param point1 first point coordinates
 	 * @param point2 second point coordinates
