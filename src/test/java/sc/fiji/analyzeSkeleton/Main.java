@@ -19,13 +19,14 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-package skeleton_analysis;
+
+package sc.fiji.analyzeSkeleton;
 
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 
-public class BasicTest {
+public class Main {
 
 	/**
 	 * Main method to test and debug the AnalyzeSkeleton plugin
