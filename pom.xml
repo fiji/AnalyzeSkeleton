@@ -3,18 +3,31 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>sc.fiji</groupId>
-		<artifactId>pom-fiji</artifactId>
-		<version>17.0.0</version>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>13.2.1</version>
 		<relativePath />
 	</parent>
 
+	<groupId>sc.fiji</groupId>
 	<artifactId>AnalyzeSkeleton_</artifactId>
 	<version>3.1.2-SNAPSHOT</version>
 
-	<name>plugins/AnalyzeSkeleton_.jar</name>
-	<description />
+	<name>Analyze Skeleton</name>
+	<description>Analysis of 2D and 3D skeleton images.</description>
+	<url>http://imagej.net/AnalyzeSkeleton</url>
 	<inceptionYear>2008</inceptionYear>
+	<organization>
+		<name>Fiji</name>
+		<url>http://fiji.sc/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>GNU General Public License v3+</name>
+			<url>http://www.gnu.org/licenses/gpl.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<developers>
 		<developer>
@@ -73,6 +86,13 @@
 		<contributor><name>Huub Hovens</name></contributor>
 	</contributors>
 
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>http://forum.imagej.net/</archive>
+		</mailingList>
+	</mailingLists>
+
 	<scm>
 		<connection>scm:git:git://github.com/fiji/AnalzyeSkeleton</connection>
 		<developerConnection>scm:git:git@github.com:fiji/AnalyzeSkeleton</developerConnection>
@@ -87,6 +107,12 @@
 		<system>Jenkins</system>
 		<url>http://jenkins.imagej.net/job/AnalyzeSkeleton/</url>
 	</ciManagement>
+
+	<properties>
+		<package-name>sc.fiji.analyzeSkeleton</package-name>
+		<license.licenseName>gpl_v3</license.licenseName>
+		<license.copyrightOwners>Ignacio Arganda-Carreras.</license.copyrightOwners>
+	</properties>
 
 	<repositories>
 		<!-- NB: for project parent -->
