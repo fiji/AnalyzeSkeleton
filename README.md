@@ -1,4 +1,4 @@
-[![](http://jenkins.imagej.net/job/AnalyzeSkeleton/lastBuild/badge/icon)](http://jenkins.imagej.net/job/AnalyzeSkeleton/)
+[![](https://travis-ci.org/fiji/AnalyzeSkeleton.svg?branch=master)](https://travis-ci.org/fiji/AnalyzeSkeleton)
 
 AnalyzeSkeleton
 ===============

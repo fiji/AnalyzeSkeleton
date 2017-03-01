@@ -104,8 +104,8 @@
 		<url>https://github.com/fiji/AnalyzeSkeleton/issues</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Jenkins</system>
-		<url>http://jenkins.imagej.net/job/AnalyzeSkeleton/</url>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/fiji/AnalyzeSkeleton</url>
 	</ciManagement>
 
 	<properties>
