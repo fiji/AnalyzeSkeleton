@@ -112,6 +112,7 @@
 		<package-name>sc.fiji.analyzeSkeleton</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>Ignacio Arganda-Carreras.</license.copyrightOwners>
+		<license.projectName>AnalyzeSkeleton_ plugin for ImageJ.</license.projectName>
 	</properties>
 
 	<repositories>
@@ -128,17 +129,4 @@
 			<artifactId>ij</artifactId>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<configuration>
-					<projectName>AnalyzeSkeleton_ plugin for ImageJ.</projectName>
-					<organizationName>Ignacio Arganda-Carreras.</organizationName>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
