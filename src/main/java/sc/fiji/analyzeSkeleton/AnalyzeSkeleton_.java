@@ -70,7 +70,7 @@ import java.util.ListIterator;
  * <A target="_blank" href="http://fiji.sc/AnalyzeSkeleton">http://fiji.sc/AnalyzeSkeleton</A>
  *
  *
- * @author Ignacio Arganda-Carreras <iarganda@mit.edu>
+ * @author Ignacio Arganda-Carreras
  *
  */
 public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener

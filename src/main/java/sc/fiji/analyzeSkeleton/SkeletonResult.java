@@ -30,7 +30,7 @@ import java.util.ArrayList;
  * AnalyzeSkeleton_'s source code.
  *
  * @version 1.0 2009-12-17
- * @author Daniel Hornung <daniel.hornung@ds.mpg.de>
+ * @author Daniel Hornung
  */
 public class SkeletonResult
 {
