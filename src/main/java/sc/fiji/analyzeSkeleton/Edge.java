@@ -22,6 +22,7 @@
 package sc.fiji.analyzeSkeleton;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * This class represents the edge between two vertices in an undirected graph.
@@ -205,6 +206,30 @@ public class Edge
 	public double getColor3rd()
 	{
 		return this.color3rd;
+	}
+
+	/**
+	 * Clones the Edge with all its properties
+	 * <p>
+	 * NB Does not clone the vertices!
+	 * </p>
+	 * 
+	 * @param v1 One endpoint of the edge, can be null
+	 * @param v2 The other endpoint of the edge, can be null
+	 */
+	public Edge clone(final Vertex v1, final Vertex v2) {
+		final ArrayList<Point> clonedSlabs;
+		if (slabs != null) {
+			clonedSlabs = slabs.stream().map(Point::clone).collect(Collectors
+				.toCollection(ArrayList::new));
+		}
+		else {
+			clonedSlabs = null;
+		}
+		final Edge clonedEdge = new Edge(v1, v2, clonedSlabs, length, color3rd,
+			color, length_ra);
+		clonedEdge.setType(type);
+		return clonedEdge;
 	}
 
 }// end class Edge

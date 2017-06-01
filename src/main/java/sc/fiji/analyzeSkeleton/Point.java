@@ -52,7 +52,7 @@ public class Point
 	 * Convert point to string.
 	 */
 	public String toString(){
-		return new String("(" + this.x + ", " + this.y + ", " + this.z + ")");
+		return "(" + this.x + ", " + this.y + ", " + this.z + ")";
 	}
 
 	/**
@@ -71,5 +71,8 @@ public class Point
 		return p.x == this.x && p.y == this.y && p.z == this.z;
 	}
 
-
+	@Override
+    public Point clone() {
+	    return new Point(x, y, z);
+    }
 }// end class point

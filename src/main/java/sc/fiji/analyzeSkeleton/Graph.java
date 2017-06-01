@@ -21,8 +21,13 @@
  */
 package sc.fiji.analyzeSkeleton;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Stack;
+import java.util.function.Function;
 
 /**
  * This class represents an undirected graph to allow 
@@ -44,8 +49,8 @@ public class Graph
 	 */
 	public Graph()
 	{
-		this.edges = new ArrayList < Edge >();
-		this.vertices = new ArrayList<Vertex>();
+		this.edges = new ArrayList<>();
+		this.vertices = new ArrayList<>();
 	}
 
 	// --------------------------------------------------------------------------
@@ -189,5 +194,24 @@ public class Graph
 		return backEdges;
 
 	} // end method depthFirstSearch
+
+    @Override
+	public Graph clone() {
+		final Graph clone = new Graph();
+		final Map<Vertex, Vertex> vertexMap = vertices.stream().collect(toMap(
+			identity(), Vertex::cloneUnconnected));
+		final Function<Edge, Edge> cloner = e -> e.clone(vertexMap.get(e.getV1()),
+			vertexMap.get(e.getV2()));
+		final Map<Edge, Edge> edgeMap = edges.stream().collect(toMap(identity(),
+			cloner));
+		vertices.forEach(v -> vertexMap.get(v).setPredecessor(edgeMap.get(v
+			.getPredecessor())));
+		// Iterate in the order of the originals to preserve order in the cloned
+		// graph (makes testing easier)
+		edges.stream().map(edgeMap::get).forEach(clone::addEdge);
+		vertices.stream().map(vertexMap::get).forEach(clone::addVertex);
+		clone.setRoot(vertexMap.get(root));
+		return clone;
+	}
 
 }// end class Graph
