@@ -52,7 +52,7 @@ public class Point
 	 * Convert point to string.
 	 */
 	public String toString(){
-		return new String("(" + this.x + ", " + this.y + ", " + this.z + ")");
+		return "(" + this.x + ", " + this.y + ", " + this.z + ")";
 	}
 
 	/**

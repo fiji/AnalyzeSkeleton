@@ -49,8 +49,8 @@ public class Graph
 	 */
 	public Graph()
 	{
-		this.edges = new ArrayList < Edge >();
-		this.vertices = new ArrayList<Vertex>();
+		this.edges = new ArrayList<>();
+		this.vertices = new ArrayList<>();
 	}
 
 	// --------------------------------------------------------------------------

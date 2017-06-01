@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * This class represents a vertex or node in a graph.
  */
-public class Vertex 
+public class Vertex
 {
 	/** list of points belonging to the vertex */
 	private ArrayList<Point> points = null;
@@ -49,8 +49,8 @@ public class Vertex
 	 */
 	public Vertex()
 	{
-		this.points = new ArrayList < Point > ();
-		this.branches = new ArrayList<Edge>();
+		this.points = new ArrayList<>();
+		this.branches = new ArrayList<>();
 	}
 
 	// --------------------------------------------------------------------------
@@ -68,12 +68,9 @@ public class Vertex
 	 * @param p input points
 	 * @return true if the point is in the vertex point list
 	 */
-	public boolean isVertexPoint(Point p)
-	{
-		if (points == null)
-			return false;
-		return points.contains(p);
-	}
+	public boolean isVertexPoint(Point p) {
+        return points != null && points.contains(p);
+    }
 	// --------------------------------------------------------------------------
 	/**
 	 * Convert list of points to String.
@@ -83,7 +80,7 @@ public class Vertex
 	{
 		StringBuilder sb = new StringBuilder();
 		for(final Point p : this.points)
-			sb.append(p.toString() + " ");
+			sb.append(p.toString()).append(" ");
 
 		return sb.toString();
 	}
@@ -99,7 +96,7 @@ public class Vertex
 	// --------------------------------------------------------------------------
 	/**
 	 * Add a new branch to the vertex.
-	 * 
+	 *
 	 * @param e neighbor edge
 	 */
 	public void setBranch(Edge e)
@@ -110,7 +107,7 @@ public class Vertex
 	// --------------------------------------------------------------------------
 	/**
 	 * Get branch list.
-	 * 
+	 *
 	 * @return list of branch vertices
 	 */
 	public ArrayList<Edge> getBranches()
@@ -120,8 +117,8 @@ public class Vertex
 	// --------------------------------------------------------------------------
 	/**
 	 * Set vertex as visited or not.
-	 * 
-	 * @param b boolean flag 
+	 *
+	 * @param b boolean flag
 	 */
 	public void setVisited(boolean b)
 	{
@@ -131,8 +128,8 @@ public class Vertex
 	// --------------------------------------------------------------------------
 	/**
 	 * Set vertex as visited or not.
-	 * 
-	 * @param b boolean flag 
+	 *
+	 * @param b boolean flag
 	 */
 	public void setVisited(boolean b, int visitOrder)
 	{
