@@ -21,7 +21,10 @@
  */
 package sc.fiji.analyzeSkeleton;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a vertex or node in a graph.
@@ -167,6 +170,20 @@ public class Vertex
 	public int getVisitOrder()
 	{
 		return this.visitOrder;
+	}
+
+	/**
+	 * Clones the Vertex disconnected from its {@link Graph}
+	 *
+	 * @return The Vertex without branches or a predecessor
+	 */
+	public Vertex cloneUnconnected() {
+		final Vertex clone = new Vertex();
+		clone.setVisited(visited, visitOrder);
+		final List<Point> clonedPoints = points.stream().map(Point::clone).collect(
+			toList());
+		clone.points.addAll(clonedPoints);
+		return clone;
 	}
 
 }// end class Vertex
