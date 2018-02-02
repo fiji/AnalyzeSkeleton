@@ -365,7 +365,8 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	/** Disables dialog components that are irrelevant to GUI-based analysis. */
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
-		if (this.imRef.getRoi()==null)
+		if ( this.imRef.getRoi() == null && null != gd
+				&& null != gd.getCheckboxes() )
 		{
 			Checkbox roiOption = (Checkbox)gd.getCheckboxes().elementAt(1);
 			roiOption.setEnabled(false);
