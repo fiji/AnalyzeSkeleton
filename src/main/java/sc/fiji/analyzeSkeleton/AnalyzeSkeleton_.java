@@ -1919,9 +1919,10 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 
 			color++;
 
-			if(color == Short.MAX_VALUE)
+			if(color == Integer.MAX_VALUE)
 			{
-				IJ.error("More than " + (Short.MAX_VALUE-1) + " skeletons in the image. AnalyzeSkeleton can only process up to 255");
+				IJ.error("More than " + (Integer.MAX_VALUE-1) +
+						" skeletons in the image. AnalyzeSkeleton can only process up to "+ (Integer.MAX_VALUE-1));
 				return null;
 			}
 
@@ -1953,9 +1954,10 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 
 				color++;
 
-				if(color == Short.MAX_VALUE)
+				if(color == Integer.MAX_VALUE)
 				{
-					IJ.error("More than " + (Short.MAX_VALUE-1) + " skeletons in the image. AnalyzeSkeleton can only process up to 255");
+					IJ.error("More than " + (Integer.MAX_VALUE-1) +
+							" skeletons in the image. AnalyzeSkeleton can only process up to "+ (Integer.MAX_VALUE-1));
 					return null;
 				}
 
