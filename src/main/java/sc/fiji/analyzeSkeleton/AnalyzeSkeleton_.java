@@ -2067,7 +2067,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 			{
 				nextPoint = toRevisit.get(0);
 				if(debug)
-					IJ.log("visiting " + nextPoint+ " color = " + color);
+					IJ.log("revisiting " + nextPoint+ " color = " + color);
 
 				// Calculate next point to visit
 				nextPoint = getNextUnvisitedVoxel(nextPoint);
