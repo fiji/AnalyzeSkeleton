@@ -1709,10 +1709,6 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 						double color = properties[2];
 						double length_ra = properties[3];
 
-
-						// Increase total length of branches
-						branchLength += length;
-
 						// Increase number of branches
 						if(length != 0)
 						{
@@ -1768,6 +1764,14 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 							if(debug)
 								IJ.log("adding branch from " + initialVertex.getPoints().get(0) + " to " + this.auxFinalVertex.getPoints().get(0));
 							this.graph[iTree].addEdge(new Edge(initialVertex, this.auxFinalVertex, this.slabList, length, color3rd, color, length_ra));
+							// Increase total length of branches
+							branchLength += length;
+
+							// update maximum branch length
+							if(length > this.maximumBranchLength[iTree])
+							{
+								this.maximumBranchLength[iTree] = length;
+							}
 						}
 					}
 					else
