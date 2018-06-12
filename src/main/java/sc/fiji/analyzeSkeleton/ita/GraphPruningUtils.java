@@ -47,13 +47,16 @@ public final class GraphPruningUtils {
 	}
 
 	// region -- Helper methods =--
-	private static double[] centroid(final Iterable<Point> points) {
+	private static double[] centroid(final Collection<Point> points) {
 		final double[] centroid = new double[3];
 		points.forEach(p -> {
 			centroid[0] += p.x;
 			centroid[1] += p.y;
 			centroid[2] += p.z;
 		});
+		for (int i = 0; i < centroid.length; i++) {
+			centroid[i] /= points.size();
+		}
 		return centroid;
 	}
 
@@ -144,52 +147,6 @@ public final class GraphPruningUtils {
 			e -> Stream.of(e.getV1(), e.getV2())).distinct().collect(toList());
 	}
 
-	private static List<Set<Vertex>> findClusters(final Graph graph,
-		final double tolerance)
-	{
-		final List<Set<Vertex>> clusters = new ArrayList<>();
-		final List<Vertex> clusterVertices = findClusterVertices(graph, tolerance);
-		while (!clusterVertices.isEmpty()) {
-			final Vertex start = clusterVertices.get(0);
-			final Set<Vertex> cluster = fillCluster(start, tolerance);
-			clusters.add(cluster);
-			clusterVertices.removeAll(cluster);
-		}
-		return clusters;
-	}
-
-	/**
-	 * Finds the edges that connect the cluster vertices to outside the cluster.
-	 *
-	 * @param cluster a collection of directly connected vertices.
-	 * @return the edges that originate from the cluster but terminate outside it.
-	 */
-	private static Set<Edge> findEdgesWithOneEndInCluster(
-		final Collection<Vertex> cluster)
-	{
-		final Map<Edge, Long> edgeCounts = cluster.stream().flatMap(v -> v
-			.getBranches().stream()).collect(groupingBy(Function.identity(),
-				Collectors.counting()));
-		return edgeCounts.keySet().stream().filter(e -> edgeCounts.get(e) == 1)
-			.collect(toSet());
-	}
-
-	/**
-	 * Creates a centroid vertex of all the vertices in a cluster.
-	 *
-	 * @param cluster a collection of directly connected vertices.
-	 * @return A vertex at the geometric center of the cluster.
-	 */
-	private static Vertex getClusterCentre(final Collection<Vertex> cluster) {
-		final Collection<Point> points = cluster.stream().flatMap(c -> c.getPoints()
-			.stream()).collect(toList());
-		final double[] centroid = centroid(points);
-		final int[] coordinates = realToIntegerCoordinate(centroid);
-		final Vertex vertex = new Vertex();
-		vertex.addPoint(new Point(coordinates[0], coordinates[1], coordinates[2]));
-		return vertex;
-	}
-
 	private static boolean isDeadEnd(final Edge e) {
 		return Stream.of(e.getV1(), e.getV2()).filter(v -> v.getBranches()
 			.size() == 1).count() == 1;
@@ -200,10 +157,6 @@ public final class GraphPruningUtils {
 	{
 		return clusters.stream().noneMatch(c -> c.contains(e.getV1()) && c.contains(
 			e.getV2()));
-	}
-
-	private static boolean isShort(final Edge e, final double minLength) {
-		return (e.getLength() < minLength);
 	}
 
 	private static double length(final double[] v) {
@@ -253,8 +206,8 @@ public final class GraphPruningUtils {
 	}
 
 	private static int[] realToIntegerCoordinate(final double[] centroid) {
-		return Arrays.stream(centroid).map(Math::round).mapToInt(d -> (int) d)
-			.toArray();
+		return Arrays.stream(centroid).mapToInt(d -> Double.isNaN(d)
+			? Integer.MAX_VALUE : (int) Math.round(d)).toArray();
 	}
 
 	private static void removeBranchFromEndpoints(final Edge branch) {
@@ -288,6 +241,56 @@ public final class GraphPruningUtils {
 			return null;
 		}
 		return replacement;
+	}
+
+	static List<Set<Vertex>> findClusters(final Graph graph,
+		final double tolerance)
+	{
+		final List<Set<Vertex>> clusters = new ArrayList<>();
+		final List<Vertex> clusterVertices = findClusterVertices(graph, tolerance);
+		while (!clusterVertices.isEmpty()) {
+			final Vertex start = clusterVertices.get(0);
+			final Set<Vertex> cluster = fillCluster(start, tolerance);
+			clusters.add(cluster);
+			clusterVertices.removeAll(cluster);
+		}
+		return clusters;
+	}
+
+	/**
+	 * Finds the edges that connect the cluster vertices to outside the cluster.
+	 *
+	 * @param cluster a collection of directly connected vertices.
+	 * @return the edges that originate from the cluster but terminate outside it.
+	 */
+	static Set<Edge> findEdgesWithOneEndInCluster(
+		final Collection<Vertex> cluster)
+	{
+		final Map<Edge, Long> edgeCounts = cluster.stream().flatMap(v -> v
+			.getBranches().stream()).collect(groupingBy(Function.identity(),
+				Collectors.counting()));
+		return edgeCounts.keySet().stream().filter(e -> edgeCounts.get(e) == 1)
+			.collect(toSet());
+	}
+
+	/**
+	 * Creates a centroid vertex of all the vertices in a cluster.
+	 *
+	 * @param cluster a collection of directly connected vertices.
+	 * @return A vertex at the geometric center of the cluster.
+	 */
+	static Vertex getClusterCentre(final Collection<Vertex> cluster) {
+		final Collection<Point> points = cluster.stream().flatMap(c -> c.getPoints()
+			.stream()).collect(toList());
+		final double[] centroid = centroid(points);
+		final int[] coordinates = realToIntegerCoordinate(centroid);
+		final Vertex vertex = new Vertex();
+		vertex.addPoint(new Point(coordinates[0], coordinates[1], coordinates[2]));
+		return vertex;
+	}
+
+	static boolean isShort(final Edge e, final double minLength) {
+		return (e.getLength() < minLength);
 	}
 	// endregion
 }
