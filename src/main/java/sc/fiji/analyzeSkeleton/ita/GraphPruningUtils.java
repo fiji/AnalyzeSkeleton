@@ -28,6 +28,7 @@ import sc.fiji.analyzeSkeleton.Vertex;
  * {@link Graph}.
  *
  * @author Richard Domander
+ * @author Alessandro Felder
  */
 public final class GraphPruningUtils {
 
