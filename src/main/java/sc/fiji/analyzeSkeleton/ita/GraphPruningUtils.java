@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import sc.fiji.analyzeSkeleton.Edge;
@@ -34,19 +35,58 @@ public final class GraphPruningUtils {
 
 	private GraphPruningUtils() {}
 
-	public static Graph pruneShortEdges(final Graph graph,
-		final double tolerance)
+	public static Graph pruneShortEdges(final Graph graph, final double tolerance,
+		final boolean iterate)
 	{
 		Graph pruned = graph.clone();
-		// final int prunedSize = pruned.getVertices().size();
+		boolean prune = true;
 		pruned.getEdges().forEach(GraphPruningUtils::euclideanDistance);
-		pruneDeadEnds(pruned, tolerance);
-		pruned = cleaningStep(pruned, tolerance);
-		// final int cleanedSize = cleaned.getVertices().size();
+		while (prune) {
+			final int startSize = pruned.getVertices().size();
+			pruneDeadEnds(pruned, tolerance);
+			pruned = cleaningStep(pruned, tolerance);
+			removeParallelEdges(pruned);
+			final int cleanedSize = pruned.getVertices().size();
+			prune = iterate && startSize != cleanedSize;
+		}
 		return pruned;
 	}
 
+	/**
+	 * Removes parallel edges from the graph, leaving at most one connection
+	 * between each vertex pair.
+	 * <p>
+	 * While the input graph might already have parallel edges, creating them is a
+	 * side effect how the graph is pruned in
+	 * {@link #pruneDeadEnds(Graph, double)}. Note that the method is already
+	 * called there, so there's no need for the user to explicitly call it
+	 * afterwards.
+	 * </p>
+	 * <p>
+	 * An edge is parallel, if there's another edge between its endpoint vertices.
+	 * </p>
+	 * <p>
+	 * NB non-deterministic in choosing which of the parallel edges is kept.
+	 * </p>
+	 *
+	 * @param graph A {@link Graph} that's assumed undirected
+	 */
+	public static void removeParallelEdges(final Graph graph) {
+		final Map<Vertex, Integer> idMap = mapVertexIds(graph.getVertices());
+		final Collection<Long> connections = new HashSet<>();
+		final Collection<Edge> parallelEdges = new ArrayList<>();
+		graph.getEdges().forEach(edge -> {
+			final long hash = connectionHash(edge, idMap);
+			if (!connections.add(hash)) {
+				parallelEdges.add(edge);
+			}
+		});
+		parallelEdges.forEach(GraphPruningUtils::removeBranchFromEndpoints);
+		graph.getEdges().removeAll(parallelEdges);
+	}
+
 	// region -- Helper methods =--
+
 	private static double[] centroid(final Collection<Point> points) {
 		final double[] centroid = new double[3];
 		points.forEach(p -> {
@@ -72,6 +112,23 @@ public final class GraphPruningUtils {
 		clusterConnectingEdges.forEach(GraphPruningUtils::euclideanDistance);
 		return createCleanGraph(graph, clusters, clusterCentres, replacements,
 			clusterConnectingEdges);
+	}
+
+	/**
+	 * Creates a unique hash number for an edge based on its endpoints.
+	 *
+	 * @param e an edge in a graph.
+	 * @param idMap mapping of vertices to unique ids.
+	 * @return a hash code.
+	 * @see #mapVertexIds(List)
+	 */
+	private static long connectionHash(final Edge e,
+		final Map<Vertex, Integer> idMap)
+	{
+		final long nVertices = idMap.size();
+		final long a = idMap.get(e.getV1());
+		final long b = idMap.get(e.getV2());
+		return a < b ? a * nVertices + b : b * nVertices + a;
 	}
 
 	private static Graph createCleanGraph(final Graph graph,
@@ -192,6 +249,19 @@ public final class GraphPruningUtils {
 			final Edge replacement = replaceEdge(oldEdge, cluster, centroid);
 			replacements.put(outerEdge, replacement);
 		});
+	}
+
+	/**
+	 * Assigns vertices a unique sequential id numbers.
+	 *
+	 * @param vertices list of vertices in a graph.
+	 * @return a (vertex, id) mapping.
+	 */
+	private static Map<Vertex, Integer> mapVertexIds(
+		final List<Vertex> vertices)
+	{
+		return IntStream.range(0, vertices.size()).boxed().collect(Collectors.toMap(
+			vertices::get, Function.identity()));
 	}
 
 	private static void pruneDeadEnds(final Graph graph, final double tolerance) {
