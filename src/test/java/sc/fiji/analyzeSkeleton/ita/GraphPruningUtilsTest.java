@@ -165,6 +165,17 @@ public class GraphPruningUtilsTest {
 			new Point(3, 2, 0)));
 	}
 
+	@Test
+	public void testGetClusterCentreIsSinglePoint() {
+		final Graph graph = createDumbbellGraph();
+		final List<Set<Vertex>> clusters = findClusters(graph, 2.01);
+
+		final List<Vertex> centres = clusters.stream().map(
+			GraphPruningUtils::getClusterCentre).collect(Collectors.toList());
+
+		assertTrue(centres.stream().allMatch(c -> c.getPoints().size() == 1));
+	}
+
 	// Tests that pruning a graph more than once creates a different result
 	@Test
 	public void testIterativePruning() {
