@@ -243,6 +243,18 @@ public class GraphPruningUtilsTest {
 	}
 
 	@Test
+	public void testPruneShortEdgesRemovesLoops() {
+		final Graph loopGraph = createLoopGraph();
+
+		final Graph cleanLoopGraph = GraphPruningUtils.pruneShortEdges(loopGraph,
+			0.0, false);
+
+		assertEquals(3, cleanLoopGraph.getEdges().size());
+		assertTrue(cleanLoopGraph.getEdges().stream().filter(e -> e.getV1() == null)
+			.noneMatch(e -> e.getV1() == e.getV2()));
+	}
+
+	@Test
 	public void testPruneShortEdgesSail() {
 		final Graph sailGraph = createSailGraph();
 
@@ -306,47 +318,7 @@ public class GraphPruningUtilsTest {
 			.allMatch(b -> b == 1));
 	}
 
-	@Test
-	public void testPruneShortEdgesRemovesLoops() {
-		final Graph loopGraph = createLoopGraph();
-
-		final Graph cleanLoopGraph = GraphPruningUtils.pruneShortEdges(loopGraph, 0.0, false);
-
-		assertEquals(3, cleanLoopGraph.getEdges().size());
-		assertTrue(cleanLoopGraph.getEdges().stream().filter(e -> e.getV1() == null)
-			.noneMatch(e -> e.getV1() == e.getV2()));
-	}
-
 	// region -- Helper regions --
-
-	/**
-	 * Creates a {@link Graph} with a loop in it.
-	 * <p>
-	 * "o" denotes a zero length loop edge
-	 * </p>
-	 *
-	 * <pre>
-	 * 	 o
-	 *   0
-	 *  / \
-	 * 1---2
-	 * </pre>
-	 */
-	private static Graph createLoopGraph() {
-
-		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(3).collect(
-				Collectors.toList());
-		vertices.get(0).addPoint(new Point(0, 0, 0));
-		vertices.get(1).addPoint(new Point(-1, -1, 0));
-		vertices.get(2).addPoint(new Point(1, -1, 0));
-
-		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
-				.get(0), null, 0.0), new Edge(vertices.get(0), vertices.get(1), null,
-				1.0), new Edge(vertices.get(0), vertices.get(2), null, 1.0), new Edge(
-				vertices.get(1), vertices.get(2), null, 2.0));
-
-		return createGraph(edges, vertices);
-	}
 
 	private static void assertEdgeEquals(final Edge expected, final Edge actual,
 		final List<Vertex> expectedVertices, final List<Vertex> actualVertices)
@@ -536,6 +508,35 @@ public class GraphPruningUtilsTest {
 				1.0), new Edge(vertices.get(1), vertices.get(3), null, Math.sqrt(3.0)),
 			new Edge(vertices.get(2), vertices.get(3), null, Math.sqrt(3.0)),
 			new Edge(vertices.get(3), vertices.get(4), null, 3 * Math.sqrt(2.0)));
+		return createGraph(edges, vertices);
+	}
+
+	/**
+	 * Creates a {@link Graph} with a loop in it.
+	 * <p>
+	 * "o" denotes a zero length loop edge
+	 * </p>
+	 *
+	 * <pre>
+	 * 	 o
+	 *   0
+	 *  / \
+	 * 1---2
+	 * </pre>
+	 */
+	private static Graph createLoopGraph() {
+
+		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(3).collect(
+			Collectors.toList());
+		vertices.get(0).addPoint(new Point(0, 0, 0));
+		vertices.get(1).addPoint(new Point(-1, -1, 0));
+		vertices.get(2).addPoint(new Point(1, -1, 0));
+
+		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
+			.get(0), null, 0.0), new Edge(vertices.get(0), vertices.get(1), null,
+				1.0), new Edge(vertices.get(0), vertices.get(2), null, 1.0), new Edge(
+					vertices.get(1), vertices.get(2), null, 2.0));
+
 		return createGraph(edges, vertices);
 	}
 

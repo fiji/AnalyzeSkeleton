@@ -54,6 +54,20 @@ public final class GraphPruningUtils {
 	}
 
 	/**
+	 * Removes all loop edges from the graph.
+	 *
+	 * @param graph a graph.
+	 * @return the graph without loop edges.
+	 * @see #isLoop(Edge)
+	 */
+	public static void removeLoops(final Graph graph) {
+		final List<Edge> loops = graph.getEdges().stream().filter(
+			GraphPruningUtils::isLoop).collect(toList());
+		loops.forEach(GraphPruningUtils::removeBranchFromEndpoints);
+		graph.getEdges().removeAll(loops);
+	}
+
+	/**
 	 * Removes parallel edges from the graph, leaving at most one connection
 	 * between each vertex pair.
 	 * <p>
@@ -86,31 +100,7 @@ public final class GraphPruningUtils {
 		graph.getEdges().removeAll(parallelEdges);
 	}
 
-	/**
-	 * Removes all loop edges from the graph.
-	 *
-	 * @param graph a graph.
-	 * @return the graph without loop edges.
-	 * @see #isLoop(Edge)
-	 */
-	public static void removeLoops(final Graph graph) {
-		final List<Edge> loops = graph.getEdges().stream().filter(GraphPruningUtils::isLoop)
-				.collect(toList());
-		loops.forEach(GraphPruningUtils::removeBranchFromEndpoints);
-		graph.getEdges().removeAll(loops);
-	}
-
 	// region -- Helper methods =--
-
-	/**
-	 * Checks if the edge forms a loop.
-	 *
-	 * @param edge an edge in a graph.
-	 * @return true if both endpoints of the edge is the same vertex.
-	 */
-	private static boolean isLoop(final Edge edge) {
-		return edge.getV1() != null && edge.getV1() == edge.getV2();
-	}
 
 	private static double[] centroid(final Collection<Point> points) {
 		final double[] centroid = new double[3];
@@ -232,6 +222,16 @@ public final class GraphPruningUtils {
 	private static boolean isDeadEnd(final Edge e) {
 		return Stream.of(e.getV1(), e.getV2()).filter(v -> v.getBranches()
 			.size() == 1).count() == 1;
+	}
+
+	/**
+	 * Checks if the edge forms a loop.
+	 *
+	 * @param edge an edge in a graph.
+	 * @return true if both endpoints of the edge is the same vertex.
+	 */
+	private static boolean isLoop(final Edge edge) {
+		return edge.getV1() != null && edge.getV1() == edge.getV2();
 	}
 
 	private static boolean isNotInClusters(final Edge e,
