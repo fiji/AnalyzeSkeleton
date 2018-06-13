@@ -9,6 +9,7 @@ import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.findEdgesWithOneEndI
 import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.getClusterCentre;
 import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.isShort;
 import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.pruneShortEdges;
+import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.removeParallelEdges;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,13 +165,27 @@ public class GraphPruningUtilsTest {
 			new Point(3, 2, 0)));
 	}
 
+	// Tests that pruning a graph more than once creates a different result
+	@Test
+	public void testIterativePruning() {
+		final Graph doorknob = createDoorknobGraph();
+
+		final Graph cleanedOnce = pruneShortEdges(doorknob, 2.01, false);
+		final Graph cleanedTwice = pruneShortEdges(doorknob, 2.01, true);
+
+		assertEquals(4, cleanedOnce.getVertices().size());
+		assertEquals(3, cleanedOnce.getEdges().size());
+		assertEquals(3, cleanedTwice.getVertices().size());
+		assertEquals(2, cleanedTwice.getEdges().size());
+	}
+
 	// Tests that edges created by the pruning have linear length, i.e. the
 	// euclidean distance of the centroids of their end points.
 	@Test
 	public void testPruneShortEdgesEdgeLength() {
 		final Graph arch = createSlabArchGraph();
 
-		final Graph cleanArch = pruneShortEdges(arch, 0);
+		final Graph cleanArch = pruneShortEdges(arch, 0, false);
 
 		assertEquals(5, cleanArch.getEdges().get(0).getLength(), 1e-12);
 	}
@@ -179,7 +194,7 @@ public class GraphPruningUtilsTest {
 	public void testPruneShortEdgesEmptyGraph() {
 		final Graph emptyGraph = new Graph();
 
-		final Graph cleanEmptyGraph = pruneShortEdges(emptyGraph, 2.01);
+		final Graph cleanEmptyGraph = pruneShortEdges(emptyGraph, 2.01, false);
 
 		assertNotNull(cleanEmptyGraph);
 		assertTrue(cleanEmptyGraph.getVertices().isEmpty());
@@ -191,7 +206,7 @@ public class GraphPruningUtilsTest {
 		final Graph graph = createSailGraph();
 		final Graph cloneGraph = graph.clone();
 
-		pruneShortEdges(graph, Double.POSITIVE_INFINITY);
+		pruneShortEdges(graph, Double.POSITIVE_INFINITY, false);
 
 		assertGraphEquals(graph, cloneGraph);
 	}
@@ -205,7 +220,7 @@ public class GraphPruningUtilsTest {
 		oneVertexGraph.addVertex(vertex);
 
 		final Graph cleanOneVertexGraph = pruneShortEdges(oneVertexGraph,
-			Double.POSITIVE_INFINITY);
+			Double.POSITIVE_INFINITY, false);
 
 		assertEquals(1, cleanOneVertexGraph.getVertices().size());
 		assertEquals(1, cleanOneVertexGraph.getVertices().get(0).getPoints()
@@ -215,10 +230,23 @@ public class GraphPruningUtilsTest {
 	}
 
 	@Test
+	public void testPruneShortEdgesNoParallelEdgesInOutput() {
+		final Graph graph = createTriangleWithSquareClusterAndArtefacts();
+
+		final Graph result = pruneShortEdges(graph, Double.POSITIVE_INFINITY,
+			false);
+
+		final int size = result.getEdges().size();
+		removeParallelEdges(result);
+		final int secondPassSize = result.getEdges().size();
+		assertEquals(size, secondPassSize);
+	}
+
+	@Test
 	public void testPruneShortEdgesSail() {
 		final Graph sailGraph = createSailGraph();
 
-		final Graph cleanSailGraph = pruneShortEdges(sailGraph, 1.01);
+		final Graph cleanSailGraph = pruneShortEdges(sailGraph, 1.01, false);
 
 		assertEquals(3, cleanSailGraph.getEdges().size());
 		assertEquals(3, cleanSailGraph.getVertices().size());
@@ -239,7 +267,8 @@ public class GraphPruningUtilsTest {
 		final List<Point> expectedPoints = Arrays.asList(new Point(0, 0, 0),
 			new Point(5, 4, 0), new Point(-4, -5, 0), new Point(5, -5, 0));
 
-		final Graph cleaned = pruneShortEdges(squareWithDiagAndLooseEnds, 2.01);
+		final Graph cleaned = pruneShortEdges(squareWithDiagAndLooseEnds, 2.01,
+			false);
 
 		assertNotNull(cleaned);
 		assertEquals(4, cleaned.getVertices().size());
@@ -256,6 +285,25 @@ public class GraphPruningUtilsTest {
 			.getLength() == expectedLength1).count());
 		assertEquals(2, cleaned.getEdges().stream().filter(e -> e
 			.getLength() == expectedLength2).count());
+	}
+
+	@Test
+	public void testRemoveParallelEdges() {
+		// SETUP
+		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(2).collect(
+			Collectors.toList());
+		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
+			.get(1), null, 0), new Edge(vertices.get(1), vertices.get(0), null, 0),
+			new Edge(vertices.get(0), vertices.get(1), null, 0));
+		final Graph graph = createGraph(edges, vertices);
+
+		// EXECUTE
+		removeParallelEdges(graph);
+
+		// VERIFY
+		assertEquals(1, graph.getEdges().size());
+		assertTrue(graph.getVertices().stream().map(v -> v.getBranches().size())
+			.allMatch(b -> b == 1));
 	}
 
 	// region -- Helper regions --
@@ -329,6 +377,46 @@ public class GraphPruningUtilsTest {
 	}
 
 	/**
+	 * Creates a {@link Graph} shaped like a door knob.
+	 *
+	 * <pre>
+	 *   4
+	 *   |
+	 *   |
+	 *   |
+	 * 1 |
+	 * |\2--6
+	 * |
+	 * |/3--7
+	 * 0 |
+	 *   |
+	 *   |
+	 *   |
+	 *   5
+	 * </pre>
+	 */
+	private static Graph createDoorknobGraph() {
+		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(8).collect(
+			Collectors.toList());
+		vertices.get(0).addPoint(new Point(0, 0, 0));
+		vertices.get(1).addPoint(new Point(0, 3, 0));
+		vertices.get(2).addPoint(new Point(1, 2, 0));
+		vertices.get(3).addPoint(new Point(1, 1, 0));
+		vertices.get(4).addPoint(new Point(1, 6, 0));
+		vertices.get(5).addPoint(new Point(1, -3, 0));
+		vertices.get(6).addPoint(new Point(3, 2, 0));
+		vertices.get(7).addPoint(new Point(3, 1, 0));
+		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
+			.get(1), null, 3.0), new Edge(vertices.get(0), vertices.get(3), null, Math
+				.sqrt(2.0)), new Edge(vertices.get(1), vertices.get(2), null, Math.sqrt(
+					2.0)), new Edge(vertices.get(2), vertices.get(4), null, Math.sqrt(
+						4.0)), new Edge(vertices.get(3), vertices.get(5), null, Math.sqrt(
+							4.0)), new Edge(vertices.get(2), vertices.get(6), null, 2.0),
+			new Edge(vertices.get(3), vertices.get(7), null, 2.0));
+		return createGraph(edges, vertices);
+	}
+
+	/**
 	 * Creates a {@link Graph} shaped like a dumbbell.
 	 *
 	 * <pre>
@@ -342,14 +430,12 @@ public class GraphPruningUtilsTest {
 	private static Graph createDumbbellGraph() {
 		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(6).collect(
 			Collectors.toList());
-
 		vertices.get(0).addPoint(new Point(0, -1, 0));
 		vertices.get(1).addPoint(new Point(1, 0, 0));
 		vertices.get(2).addPoint(new Point(0, 1, 0));
 		vertices.get(3).addPoint(new Point(4, 0, 0));
 		vertices.get(4).addPoint(new Point(5, -1, 0));
 		vertices.get(5).addPoint(new Point(5, 1, 0));
-
 		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
 			.get(1), null, Math.sqrt(2.0)), new Edge(vertices.get(0), vertices.get(2),
 				null, 2.0), new Edge(vertices.get(1), vertices.get(2), null, Math.sqrt(
@@ -400,19 +486,16 @@ public class GraphPruningUtilsTest {
 	private static Graph createKiteGraph() {
 		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(5).collect(
 			Collectors.toList());
-
 		vertices.get(0).addPoint(new Point(0, 0, 0));
 		vertices.get(1).addPoint(new Point(1, 0, 0));
 		vertices.get(2).addPoint(new Point(0, 1, 0));
 		vertices.get(3).addPoint(new Point(2, 2, 0));
 		vertices.get(4).addPoint(new Point(5, 5, 0));
-
 		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
 			.get(1), null, 1.0), new Edge(vertices.get(0), vertices.get(2), null,
 				1.0), new Edge(vertices.get(1), vertices.get(3), null, Math.sqrt(3.0)),
 			new Edge(vertices.get(2), vertices.get(3), null, Math.sqrt(3.0)),
 			new Edge(vertices.get(3), vertices.get(4), null, 3 * Math.sqrt(2.0)));
-
 		return createGraph(edges, vertices);
 	}
 
@@ -440,12 +523,10 @@ public class GraphPruningUtilsTest {
 		vertices.get(1).addPoint(new Point(2, 0, 0));
 		vertices.get(2).addPoint(new Point(0, 3, 0));
 		vertices.get(3).addPoint(new Point(0, -1, 0));
-
 		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
 			.get(1), null, 2.0), new Edge(vertices.get(0), vertices.get(2), null,
 				3.0), new Edge(vertices.get(1), vertices.get(2), null, Math.sqrt(13.0)),
 			new Edge(vertices.get(0), vertices.get(3), null, 1.0));
-
 		return createGraph(edges, vertices);
 	}
 
@@ -466,15 +547,11 @@ public class GraphPruningUtilsTest {
 			Collectors.toList());
 		vertices.get(0).addPoint(new Point(0, 0, 0));
 		vertices.get(1).addPoint(new Point(5, 0, 0));
-
 		final List<Point> slabPoints = Arrays.asList(new Point(1, 1, 0), new Point(
 			2, 2, 0), new Point(3, 2, 0), new Point(4, 1, 0));
-
 		final ArrayList<Point> slabs = new ArrayList<>(slabPoints);
-
 		final Edge edge = new Edge(vertices.get(0), vertices.get(1), slabs, 4 * Math
 			.sqrt(2.0) + 1);
-
 		return createGraph(Collections.singleton(edge), vertices);
 	}
 
@@ -493,7 +570,6 @@ public class GraphPruningUtilsTest {
 	 * </pre>
 	 */
 	private static Graph createTriangleWithSquareCluster() {
-
 		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(7).collect(
 			Collectors.toList());
 		vertices.get(0).addPoint(new Point(-1, -1, 0));
@@ -503,7 +579,6 @@ public class GraphPruningUtilsTest {
 		vertices.get(4).addPoint(new Point(5, 4, 0));
 		vertices.get(5).addPoint(new Point(-4, -5, 0));
 		vertices.get(6).addPoint(new Point(5, -5, 0));
-
 		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
 			.get(1), null, 2.0), new Edge(vertices.get(1), vertices.get(2), null,
 				2.0), new Edge(vertices.get(2), vertices.get(3), null, 2.0), new Edge(
@@ -513,7 +588,53 @@ public class GraphPruningUtilsTest {
 								vertices.get(5), null, 5.0), new Edge(vertices.get(4), vertices
 									.get(6), null, 9.0), new Edge(vertices.get(5), vertices.get(
 										6), null, 9.0));
+		return createGraph(edges, vertices);
+	}
 
+	/**
+	 * Creates a triangle graph with square cluster, three loops ("o"), two
+	 * parallel edges and a dead end edge
+	 *
+	 * <pre>
+	 *             o
+	 *             4
+	 *           _/||
+	 *     3--2_/  ||
+	 *     |\_|	   ||
+	 *    _0--1	   ||
+	 *  _/         ||
+	 * /           ||
+	 *5------------6------------7
+	 *o------------o
+	 * </pre>
+	 */
+	private static Graph createTriangleWithSquareClusterAndArtefacts() {
+		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(8).collect(
+			Collectors.toList());
+		vertices.get(0).addPoint(new Point(-1, -1, 0));
+		vertices.get(1).addPoint(new Point(-1, 1, 0));
+		vertices.get(2).addPoint(new Point(1, 1, 0));
+		vertices.get(3).addPoint(new Point(1, -1, 0));
+		vertices.get(4).addPoint(new Point(5, 4, 0));
+		vertices.get(5).addPoint(new Point(-4, -5, 0));
+		vertices.get(6).addPoint(new Point(5, -5, 0));
+		vertices.get(7).addPoint(new Point(7, -5, 0));
+		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
+			.get(1), null, 2.0), new Edge(vertices.get(1), vertices.get(2), null,
+				2.0), new Edge(vertices.get(2), vertices.get(3), null, 2.0), new Edge(
+					vertices.get(3), vertices.get(0), null, 2.0), new Edge(vertices.get(
+						1), vertices.get(3), null, 2.0 * Math.sqrt(2.0)), new Edge(vertices
+							.get(2), vertices.get(4), null, 5.0), new Edge(vertices.get(0),
+								vertices.get(5), null, 5.0), new Edge(vertices.get(4), vertices
+									.get(6), null, 9.0), new Edge(vertices.get(6), vertices.get(
+										4), null, 9.0), // opposite-way-parallel-edge
+			new Edge(vertices.get(5), vertices.get(6), null, 9.0), new Edge(vertices
+				.get(5), vertices.get(6), null, 9.0), // same-way-parallel-edge
+			new Edge(vertices.get(6), vertices.get(7), null, 2.0), // dead-end
+			new Edge(vertices.get(5), vertices.get(5), null, 9.0), // loop
+			new Edge(vertices.get(6), vertices.get(6), null, 9.0), // loop
+			new Edge(vertices.get(4), vertices.get(4), null, 9.0) // loop
+		);
 		return createGraph(edges, vertices);
 	}
 
