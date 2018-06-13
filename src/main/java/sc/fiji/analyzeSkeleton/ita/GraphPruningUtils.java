@@ -38,6 +38,12 @@ public final class GraphPruningUtils {
 	public static Graph pruneShortEdges(final Graph graph, final double tolerance,
 		final boolean iterate)
 	{
+		return pruneShortEdges(graph, tolerance, iterate, true);
+	}
+
+	public static Graph pruneShortEdges(final Graph graph, final double tolerance,
+		final boolean iterate, final boolean clustered)
+	{
 		Graph pruned = graph.clone();
 		boolean prune = true;
 		removeLoops(pruned);
@@ -45,7 +51,12 @@ public final class GraphPruningUtils {
 		while (prune) {
 			final int startSize = pruned.getVertices().size();
 			pruneDeadEnds(pruned, tolerance);
-			pruned = cleaningStep(pruned, tolerance);
+			if (clustered) {
+				pruned = cleaningStep(pruned, tolerance);
+			}
+			else {
+				pruned = edgeCleaning(pruned, tolerance);
+			}
 			removeParallelEdges(pruned);
 			final int cleanedSize = pruned.getVertices().size();
 			prune = iterate && startSize != cleanedSize;
@@ -57,7 +68,6 @@ public final class GraphPruningUtils {
 	 * Removes all loop edges from the graph.
 	 *
 	 * @param graph a graph.
-	 * @return the graph without loop edges.
 	 * @see #isLoop(Edge)
 	 */
 	public static void removeLoops(final Graph graph) {
@@ -100,7 +110,7 @@ public final class GraphPruningUtils {
 		graph.getEdges().removeAll(parallelEdges);
 	}
 
-	// region -- Helper methods =--
+	// region -- Helper methods --
 
 	private static double[] centroid(final Collection<Point> points) {
 		final double[] centroid = new double[3];
@@ -117,16 +127,11 @@ public final class GraphPruningUtils {
 
 	private static Graph cleaningStep(final Graph graph, final double tolerance) {
 		final List<Set<Vertex>> clusters = findClusters(graph, tolerance);
-		final Map<Set<Vertex>, Vertex> clusterCentres = clusters.stream().collect(
-			Collectors.toMap(Function.identity(),
-				GraphPruningUtils::getClusterCentre));
-		final Map<Edge, Edge> replacements = new HashMap<>();
-		clusterCentres.forEach((cluster, centre) -> mapReplacementEdges(
-			replacements, cluster, centre));
-		final Collection<Edge> clusterConnectingEdges = replacements.values();
-		clusterConnectingEdges.forEach(GraphPruningUtils::euclideanDistance);
-		return createCleanGraph(graph, clusters, clusterCentres, replacements,
-			clusterConnectingEdges);
+		final List<Vertex> clusterCentres = clusters.stream().map(
+			GraphPruningUtils::getClusterCentre).collect(toList());
+		final Map<Edge, Edge> replacements = mapReplacementEdges(clusters,
+			clusterCentres);
+		return createCleanGraph(graph, clusters, clusterCentres, replacements);
 	}
 
 	/**
@@ -147,25 +152,51 @@ public final class GraphPruningUtils {
 	}
 
 	private static Graph createCleanGraph(final Graph graph,
-		final List<Set<Vertex>> clusters,
-		final Map<Set<Vertex>, Vertex> clusterCentres,
-		final Map<Edge, Edge> replacements,
-		final Collection<Edge> clusterConnectingEdges)
+		final Collection<Set<Vertex>> clusters,
+		final Collection<Vertex> clusterCentres, final Map<Edge, Edge> replacements)
 	{
+		final Collection<Edge> clusterEdges = getClusterEdges(replacements);
 		final List<Edge> nonClusterEdges = graph.getEdges().stream().filter(
 			e -> !replacements.containsKey(e) && isNotInClusters(e, clusters))
 			.collect(toList());
 		final Graph cleanGraph = new Graph();
 		final Collection<Edge> cleanEdges = new HashSet<>();
 		cleanEdges.addAll(nonClusterEdges);
-		cleanEdges.addAll(clusterConnectingEdges);
+		cleanEdges.addAll(clusterEdges);
 		cleanGraph.getEdges().addAll(cleanEdges);
-		clusterCentres.values().forEach(cleanGraph::addVertex);
+		clusterCentres.forEach(cleanGraph::addVertex);
 		endpoints(nonClusterEdges).forEach(cleanGraph::addVertex);
-		endpoints(clusterConnectingEdges).forEach(cleanGraph::addVertex);
+		endpoints(clusterEdges).forEach(cleanGraph::addVertex);
 		lonelyVertices(graph).forEach(cleanGraph::addVertex);
 		removeDanglingBranches(cleanGraph);
 		return cleanGraph;
+	}
+
+	private static Graph edgeCleaning(final Graph graph, final double tolerance) {
+		Graph cleanGraph = graph.clone();
+		final List<Edge> innerEdges = cleanGraph.getEdges().stream().filter(
+			e -> isShort(e, tolerance) && !isDeadEnd(e)).collect(toList());
+		for (final Edge innerEdge : innerEdges) {
+			final List<Set<Vertex>> pairs = new ArrayList<>();
+			pairs.add(getEndpoints(innerEdge));
+			final List<Vertex> centroids = pairs.stream().map(
+				GraphPruningUtils::getClusterCentre).collect(toList());
+			final Map<Edge, Edge> replacements = mapReplacementEdges(pairs, centroids);
+			final Graph tmp = createCleanGraph(cleanGraph, pairs, centroids, replacements);
+			updateInnerEdges(innerEdges, replacements);
+			cleanGraph = tmp;
+		}
+		return cleanGraph;
+	}
+
+	private static void updateInnerEdges(final List<Edge> innerEdges,
+		final Map<Edge, Edge> replacements)
+	{
+		innerEdges.stream().filter(replacements::containsKey).forEach(e -> {
+			final int i = innerEdges.indexOf(e);
+			final Edge replacement = replacements.get(e);
+			innerEdges.set(i, replacement);
+		});
 	}
 
 	private static Stream<Vertex> endpoints(final Collection<Edge> edges) {
@@ -219,6 +250,20 @@ public final class GraphPruningUtils {
 			e -> Stream.of(e.getV1(), e.getV2())).distinct().collect(toList());
 	}
 
+	private static Collection<Edge> getClusterEdges(
+		final Map<Edge, Edge> replacements)
+	{
+		return replacements.values().stream().peek(
+			GraphPruningUtils::euclideanDistance).collect(toList());
+	}
+
+	private static Set<Vertex> getEndpoints(final Edge edge) {
+		final Set<Vertex> pair = new HashSet<>();
+		pair.add(edge.getV1());
+		pair.add(edge.getV2());
+		return pair;
+	}
+
 	private static boolean isDeadEnd(final Edge e) {
 		return Stream.of(e.getV1(), e.getV2()).filter(v -> v.getBranches()
 			.size() == 1).count() == 1;
@@ -235,7 +280,7 @@ public final class GraphPruningUtils {
 	}
 
 	private static boolean isNotInClusters(final Edge e,
-		final Collection<Set<Vertex>> clusters)
+		final Collection<? extends Collection<Vertex>> clusters)
 	{
 		return clusters.stream().noneMatch(c -> c.contains(e.getV1()) && c.contains(
 			e.getV2()));
@@ -264,16 +309,21 @@ public final class GraphPruningUtils {
 	 * connecting two clusters to each other.
 	 * </p>
 	 */
-
-	private static void mapReplacementEdges(final Map<Edge, Edge> replacements,
-		final Collection<Vertex> cluster, final Vertex centroid)
+	private static Map<Edge, Edge> mapReplacementEdges(
+		final List<Set<Vertex>> clusters, final List<Vertex> clusterCentres)
 	{
-		final Set<Edge> outerEdges = findEdgesWithOneEndInCluster(cluster);
-		outerEdges.forEach(outerEdge -> {
-			final Edge oldEdge = replacements.getOrDefault(outerEdge, outerEdge);
-			final Edge replacement = replaceEdge(oldEdge, cluster, centroid);
-			replacements.put(outerEdge, replacement);
-		});
+		final Map<Edge, Edge> replacements = new HashMap<>();
+		for (int i = 0; i < clusters.size(); i++) {
+			final Collection<Vertex> cluster = clusters.get(i);
+			final Vertex centre = clusterCentres.get(i);
+			final Set<Edge> outerEdges = findEdgesWithOneEndInCluster(cluster);
+			for (final Edge outerEdge : outerEdges) {
+				final Edge oldEdge = replacements.getOrDefault(outerEdge, outerEdge);
+				final Edge replacement = replaceEdge(oldEdge, cluster, centre);
+				replacements.put(outerEdge, replacement);
+			}
+		}
+		return replacements;
 	}
 
 	/**
@@ -374,7 +424,7 @@ public final class GraphPruningUtils {
 	 * @param cluster a collection of directly connected vertices.
 	 * @return A vertex at the geometric center of the cluster.
 	 */
-	static Vertex getClusterCentre(final Collection<Vertex> cluster) {
+	static Vertex getClusterCentre(final Set<Vertex> cluster) {
 		final Collection<Point> points = cluster.stream().flatMap(c -> c.getPoints()
 			.stream()).collect(toList());
 		final double[] centroid = centroid(points);

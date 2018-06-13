@@ -13,7 +13,6 @@ import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.removeParallelEdges;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -157,7 +156,7 @@ public class GraphPruningUtilsTest {
 		vertices.get(0).addPoint(new Point(2, 0, 0));
 		vertices.get(1).addPoint(new Point(4, 0, 0));
 		vertices.get(2).addPoint(new Point(3, 6, 0));
-		final Collection<Vertex> cluster = new HashSet<>(vertices);
+		final Set<Vertex> cluster = new HashSet<>(vertices);
 
 		final Vertex clusterCentre = getClusterCentre(cluster);
 
