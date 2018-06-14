@@ -213,7 +213,7 @@ public class GraphPruningUtilsTest {
 		final Graph arch = createSlabArchGraph();
 
 		// EXECUTE
-		final Graph cleanArch = pruneShortEdges(arch, 0, false, true, ISOTROPIC);
+		final Graph cleanArch = pruneShortEdges(arch, 0, false, true);
 
 		// VERIFY
 		assertEquals(5, cleanArch.getEdges().get(0).getLength(), 1e-12);

@@ -37,6 +37,11 @@ public final class GraphPruningUtils {
 	private GraphPruningUtils() {}
 
 	public static Graph pruneShortEdges(final Graph graph, final double tolerance,
+										final boolean iterate, final boolean clustered) {
+		return pruneShortEdges(graph, tolerance, iterate, clustered, new double[]{1.0, 1.0, 1.0});
+	}
+
+	public static Graph pruneShortEdges(final Graph graph, final double tolerance,
 		final boolean iterate, final boolean clustered, final double[] voxelSize)
 	{
 		Graph pruned = graph.clone();
