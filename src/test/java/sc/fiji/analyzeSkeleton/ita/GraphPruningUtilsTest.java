@@ -175,20 +175,6 @@ public class GraphPruningUtilsTest {
 		assertTrue(centres.stream().allMatch(c -> c.getPoints().size() == 1));
 	}
 
-	// Tests that pruning a graph more than once creates a different result
-	@Test
-	public void testIterativePruning() {
-		final Graph doorknob = createDoorknobGraph();
-
-		final Graph cleanedOnce = pruneShortEdges(doorknob, 2.01, false);
-		final Graph cleanedTwice = pruneShortEdges(doorknob, 2.01, true);
-
-		assertEquals(4, cleanedOnce.getVertices().size());
-		assertEquals(3, cleanedOnce.getEdges().size());
-		assertEquals(3, cleanedTwice.getVertices().size());
-		assertEquals(2, cleanedTwice.getEdges().size());
-	}
-
 	// Tests that edges created by the pruning have linear length, i.e. the
 	// euclidean distance of the centroids of their end points.
 	@Test
@@ -219,6 +205,20 @@ public class GraphPruningUtilsTest {
 		pruneShortEdges(graph, Double.POSITIVE_INFINITY, false);
 
 		assertGraphEquals(graph, cloneGraph);
+	}
+
+	// Tests that pruning a graph more than once creates a different result
+	@Test
+	public void testPruneShortEdgesIterativePruning() {
+		final Graph doorknob = createDoorknobGraph();
+
+		final Graph cleanedOnce = pruneShortEdges(doorknob, 2.01, false);
+		final Graph cleanedTwice = pruneShortEdges(doorknob, 2.01, true);
+
+		assertEquals(4, cleanedOnce.getVertices().size());
+		assertEquals(3, cleanedOnce.getEdges().size());
+		assertEquals(3, cleanedTwice.getVertices().size());
+		assertEquals(2, cleanedTwice.getEdges().size());
 	}
 
 	@Test
