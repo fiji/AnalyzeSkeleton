@@ -40,20 +40,25 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testFindClustersCentresHaveOnePoint() {
+		// SETUP
 		final Graph graph = createDumbbellGraph();
 		final List<Set<Vertex>> clusters = findClusters(graph, 2.01);
 
+		// EXECUTE
 		final List<Vertex> centres = clusters.stream().map(
 			GraphPruningUtils::getClusterCentre).collect(Collectors.toList());
 
+		// VERIFY
 		assertTrue(centres.stream().allMatch(c -> c.getPoints().size() == 1));
 	}
 
 	// Should result in a graph with two clusters of 3 connected by a single edge
 	@Test
 	public void testFindClustersDumbbell() {
+		// SETUP
 		final Graph dumbbellGraph = createDumbbellGraph();
 
+		// EXECUTE
 		final List<Set<Vertex>> clusters = findClusters(dumbbellGraph, 2.01);
 
 		// VERIFY CLUSTERS
@@ -94,12 +99,15 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testFindClustersKite() {
+		// SETUP
 		final Graph kiteGraph = createKiteGraph();
 		final ArrayList<Vertex> vertices = kiteGraph.getVertices();
 		final ArrayList<Edge> edges = kiteGraph.getEdges();
 
+		// EXECUTE
 		final List<Set<Vertex>> clusters = findClusters(kiteGraph, 1.01);
 
+		// VERIFY
 		assertNotNull(clusters);
 		assertEquals(1, clusters.size());
 		final Set<Vertex> cluster = clusters.get(0);
@@ -115,11 +123,14 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testFindClustersSquareCluster() {
+		// SETUP
 		final Graph squareWithDiagAndLooseEnds = createTriangleWithSquareCluster();
 
+		// EXECUTE
 		final List<Set<Vertex>> clusters = findClusters(squareWithDiagAndLooseEnds,
 			2.01);
 
+		// VERIFY
 		assertEquals(1, clusters.size());
 		final Set<Vertex> cluster = clusters.get(0);
 		assertEquals(4, cluster.size());
@@ -129,12 +140,15 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testFindEdgesWithOneEndInClusterSquareCluster() {
+		// SETUP
 		final Graph squareWithDiagAndLooseEnds = createTriangleWithSquareCluster();
 		final Set<Vertex> cluster = findClusters(squareWithDiagAndLooseEnds, 2.01)
 			.get(0);
 
+		// EXECUTE
 		final Set<Edge> outerEdges = findEdgesWithOneEndInCluster(cluster);
 
+		// VERIFY
 		assertEquals(
 			"Cluster has wrong number of edges connecting it to the rest of the graph",
 			2, outerEdges.size());
@@ -183,6 +197,28 @@ public class GraphPruningUtilsTest {
 
 		// VERIFY
 		assertTrue(centres.stream().allMatch(c -> c.getPoints().size() == 1));
+	}
+
+	@Test
+	public void testPruneShortEdgesAnisotropicVoxels() {
+		// SETUP
+		final Graph sailGraph = createSailGraph();
+		final double[] calibration = { 2.0, 5.0, 3.0 };
+
+		// EXECUTE
+		final Graph cleanSailGraph = pruneShortEdges(sailGraph, 0, false, true,
+			calibration);
+
+		// VERIFY
+		assertEquals(4, cleanSailGraph.getEdges().size());
+		assertTrue(cleanSailGraph.getEdges().stream().anyMatch(e -> e
+			.getLength() == 4.0));
+		assertTrue(cleanSailGraph.getEdges().stream().anyMatch(e -> e
+			.getLength() == 15.0));
+		assertTrue(cleanSailGraph.getEdges().stream().anyMatch(e -> e
+			.getLength() == Math.sqrt(241)));
+		assertTrue(cleanSailGraph.getEdges().stream().anyMatch(e -> e
+			.getLength() == 5.0));
 	}
 
 	// Tests that pruning works differently, when it operates on vertex pairs
