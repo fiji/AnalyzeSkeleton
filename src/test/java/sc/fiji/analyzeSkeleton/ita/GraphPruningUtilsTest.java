@@ -140,9 +140,11 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testGetClusterCenterEmptyCluster() {
+		// EXECUTE
 		final ArrayList<Point> points = getClusterCentre(Collections.emptySet())
 			.getPoints();
 
+		// VERIFY
 		assertEquals(1, points.size());
 		assertEquals(Integer.MAX_VALUE, points.get(0).x);
 		assertEquals(Integer.MAX_VALUE, points.get(0).y);
@@ -151,6 +153,7 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testGetClusterCentreCentroidCoordinates() {
+		// SETUP
 		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(3).collect(
 			Collectors.toList());
 		vertices.get(0).addPoint(new Point(2, 0, 0));
@@ -158,40 +161,71 @@ public class GraphPruningUtilsTest {
 		vertices.get(2).addPoint(new Point(3, 6, 0));
 		final Set<Vertex> cluster = new HashSet<>(vertices);
 
+		// EXECUTE
 		final Vertex clusterCentre = getClusterCentre(cluster);
 
+		// VERIFY
 		assertTrue("Centroid has wrong coordinates", clusterCentre.isVertexPoint(
 			new Point(3, 2, 0)));
 	}
 
 	@Test
 	public void testGetClusterCentreIsSinglePoint() {
+		// SETUP
 		final Graph graph = createDumbbellGraph();
 		final List<Set<Vertex>> clusters = findClusters(graph, 2.01);
 
+		// EXECUTE
 		final List<Vertex> centres = clusters.stream().map(
 			GraphPruningUtils::getClusterCentre).collect(Collectors.toList());
 
+		// VERIFY
 		assertTrue(centres.stream().allMatch(c -> c.getPoints().size() == 1));
+	}
+
+	// Tests that pruning works differently, when it operates on vertex pairs
+	// instead of clusters of vertices
+	@Test
+	public void testPruneShortEdgesClusteredFalse() {
+		// SETUP
+		final Graph segmentGraph = createLineGraph();
+
+		// EXECUTE
+		final Graph cleanSegmentGraph = GraphPruningUtils.pruneShortEdges(
+			segmentGraph, 4.01, false, false);
+
+		// VERIFY
+		assertEquals(3, cleanSegmentGraph.getVertices().size());
+		assertEquals(2, cleanSegmentGraph.getEdges().size());
+		assertEquals(1, cleanSegmentGraph.getEdges().stream().filter(e -> e
+			.getLength() == 17.0).count());
+		assertEquals(1, cleanSegmentGraph.getEdges().stream().filter(e -> e
+			.getLength() == 15.0).count());
 	}
 
 	// Tests that edges created by the pruning have linear length, i.e. the
 	// euclidean distance of the centroids of their end points.
 	@Test
 	public void testPruneShortEdgesEdgeLength() {
+		// SETUP
 		final Graph arch = createSlabArchGraph();
 
+		// EXECUTE
 		final Graph cleanArch = pruneShortEdges(arch, 0, false);
 
+		// VERIFY
 		assertEquals(5, cleanArch.getEdges().get(0).getLength(), 1e-12);
 	}
 
 	@Test
 	public void testPruneShortEdgesEmptyGraph() {
+		// SETUP
 		final Graph emptyGraph = new Graph();
 
+		// EXECUTE
 		final Graph cleanEmptyGraph = pruneShortEdges(emptyGraph, 2.01, false);
 
+		// VERIFY
 		assertNotNull(cleanEmptyGraph);
 		assertTrue(cleanEmptyGraph.getVertices().isEmpty());
 		assertTrue(cleanEmptyGraph.getEdges().isEmpty());
@@ -199,22 +233,28 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testPruneShortEdgesInputNotMutated() {
+		// SETUP
 		final Graph graph = createSailGraph();
 		final Graph cloneGraph = graph.clone();
 
+		// EXECUTE
 		pruneShortEdges(graph, Double.POSITIVE_INFINITY, false);
 
+		// VERIFY
 		assertGraphEquals(graph, cloneGraph);
 	}
 
 	// Tests that pruning a graph more than once creates a different result
 	@Test
 	public void testPruneShortEdgesIterativePruning() {
+		// SETUP
 		final Graph doorknob = createDoorknobGraph();
 
+		// EXECUTE
 		final Graph cleanedOnce = pruneShortEdges(doorknob, 2.01, false);
 		final Graph cleanedTwice = pruneShortEdges(doorknob, 2.01, true);
 
+		// VERIFY
 		assertEquals(4, cleanedOnce.getVertices().size());
 		assertEquals(3, cleanedOnce.getEdges().size());
 		assertEquals(3, cleanedTwice.getVertices().size());
@@ -223,15 +263,18 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testPruneShortEdgesLonelyVertexReturnsLonelyVertex() {
+		// SETUP
 		final Vertex vertex = new Vertex();
 		final Point randomNonZero = new Point(7, 1, 3);
 		vertex.addPoint(randomNonZero);
 		final Graph oneVertexGraph = new Graph();
 		oneVertexGraph.addVertex(vertex);
 
+		// EXECUTE
 		final Graph cleanOneVertexGraph = pruneShortEdges(oneVertexGraph,
 			Double.POSITIVE_INFINITY, false);
 
+		// VERIFY
 		assertEquals(1, cleanOneVertexGraph.getVertices().size());
 		assertEquals(1, cleanOneVertexGraph.getVertices().get(0).getPoints()
 			.size());
@@ -241,11 +284,14 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testPruneShortEdgesNoParallelEdgesInOutput() {
+		// SETUP
 		final Graph graph = createTriangleWithSquareClusterAndArtefacts();
 
+		// EXECUTE
 		final Graph result = pruneShortEdges(graph, Double.POSITIVE_INFINITY,
 			false);
 
+		// VERIFY
 		final int size = result.getEdges().size();
 		removeParallelEdges(result);
 		final int secondPassSize = result.getEdges().size();
@@ -254,11 +300,14 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testPruneShortEdgesRemovesLoops() {
+		// SETUP
 		final Graph loopGraph = createLoopGraph();
 
+		// EXECUTE
 		final Graph cleanLoopGraph = GraphPruningUtils.pruneShortEdges(loopGraph,
 			0.0, false);
 
+		// VERIFY
 		assertEquals(3, cleanLoopGraph.getEdges().size());
 		assertTrue(cleanLoopGraph.getEdges().stream().filter(e -> e.getV1() == null)
 			.noneMatch(e -> e.getV1() == e.getV2()));
@@ -266,10 +315,13 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testPruneShortEdgesSail() {
+		// SETUP
 		final Graph sailGraph = createSailGraph();
 
+		// EXECUTE
 		final Graph cleanSailGraph = pruneShortEdges(sailGraph, 1.01, false);
 
+		// VERIFY
 		assertEquals(3, cleanSailGraph.getEdges().size());
 		assertEquals(3, cleanSailGraph.getVertices().size());
 		assertEquals(1, cleanSailGraph.getVertices().stream().flatMap(v -> v
@@ -285,13 +337,16 @@ public class GraphPruningUtilsTest {
 
 	@Test
 	public void testPruneShortEdgesTriangleWithSquareCluster() {
+		// SETUP
 		final Graph squareWithDiagAndLooseEnds = createTriangleWithSquareCluster();
 		final List<Point> expectedPoints = Arrays.asList(new Point(0, 0, 0),
 			new Point(5, 4, 0), new Point(-4, -5, 0), new Point(5, -5, 0));
 
+		// EXECUTE
 		final Graph cleaned = pruneShortEdges(squareWithDiagAndLooseEnds, 2.01,
 			false);
 
+		// VERIFY
 		assertNotNull(cleaned);
 		assertEquals(4, cleaned.getVertices().size());
 		assertEquals(4, cleaned.getEdges().size());
@@ -328,8 +383,6 @@ public class GraphPruningUtilsTest {
 			.allMatch(b -> b == 1));
 	}
 
-	// region -- Helper regions --
-
 	private static void assertEdgeEquals(final Edge expected, final Edge actual,
 		final List<Vertex> expectedVertices, final List<Vertex> actualVertices)
 	{
@@ -343,6 +396,8 @@ public class GraphPruningUtilsTest {
 		assertEquals(expectedVertices.indexOf(expected.getV2()), actualVertices
 			.indexOf(actual.getV2()));
 	}
+
+	// region -- Helper regions --
 
 	private static void assertGraphEquals(final Graph expected,
 		final Graph actual)
@@ -518,6 +573,31 @@ public class GraphPruningUtilsTest {
 				1.0), new Edge(vertices.get(1), vertices.get(3), null, Math.sqrt(3.0)),
 			new Edge(vertices.get(2), vertices.get(3), null, Math.sqrt(3.0)),
 			new Edge(vertices.get(3), vertices.get(4), null, 3 * Math.sqrt(2.0)));
+		return createGraph(edges, vertices);
+	}
+
+	/**
+	 * Creates a {@link Graph} with 5 vertices in a straight line.
+	 *
+	 * <pre>
+	 * 0---1-2-3---4
+	 * </pre>
+	 */
+	private static Graph createLineGraph() {
+
+		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(5).collect(
+			Collectors.toList());
+		vertices.get(0).addPoint(new Point(-16, 0, 0));
+		vertices.get(1).addPoint(new Point(-4, 0, 0));
+		vertices.get(2).addPoint(new Point(0, 0, 0));
+		vertices.get(3).addPoint(new Point(4, 0, 0));
+		vertices.get(4).addPoint(new Point(16, 0, 0));
+
+		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
+			.get(1), null, 12.0), new Edge(vertices.get(1), vertices.get(2), null,
+				4.0), new Edge(vertices.get(2), vertices.get(3), null, 4.0), new Edge(
+					vertices.get(3), vertices.get(4), null, 12.0));
+
 		return createGraph(edges, vertices);
 	}
 
