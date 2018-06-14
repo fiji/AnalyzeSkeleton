@@ -141,19 +141,6 @@ public class GraphPruningUtilsTest {
 	}
 
 	@Test
-	public void testGetClusterCenterEmptyCluster() {
-		// EXECUTE
-		final ArrayList<Point> points = getClusterCentre(Collections.emptySet())
-			.getPoints();
-
-		// VERIFY
-		assertEquals(1, points.size());
-		assertEquals(Integer.MAX_VALUE, points.get(0).x);
-		assertEquals(Integer.MAX_VALUE, points.get(0).y);
-		assertEquals(Integer.MAX_VALUE, points.get(0).z);
-	}
-
-	@Test
 	public void testGetClusterCentreCentroidCoordinates() {
 		// SETUP
 		final List<Vertex> vertices = Stream.generate(Vertex::new).limit(3).collect(
@@ -169,6 +156,19 @@ public class GraphPruningUtilsTest {
 		// VERIFY
 		assertTrue("Centroid has wrong coordinates", clusterCentre.isVertexPoint(
 			new Point(3, 2, 0)));
+	}
+
+	@Test
+	public void testGetClusterCentreEmptyCluster() {
+		// EXECUTE
+		final ArrayList<Point> points = getClusterCentre(Collections.emptySet())
+			.getPoints();
+
+		// VERIFY
+		assertEquals(1, points.size());
+		assertEquals(Integer.MAX_VALUE, points.get(0).x);
+		assertEquals(Integer.MAX_VALUE, points.get(0).y);
+		assertEquals(Integer.MAX_VALUE, points.get(0).z);
 	}
 
 	@Test
