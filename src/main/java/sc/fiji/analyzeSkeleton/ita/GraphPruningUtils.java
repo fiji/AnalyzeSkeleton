@@ -36,6 +36,29 @@ public final class GraphPruningUtils {
 
 	private GraphPruningUtils() {}
 
+	/**
+	 * Creates a copy of the graph, where short edges have been removed.
+	 * <p>
+	 * Calls {@link #pruneShortEdges(Graph, double, boolean, boolean, double[])}
+	 * with isotropic voxel size {1.0, 1.0, 1.0}.
+	 * </p>
+	 *
+	 * @param graph a graph from a skeleton.
+	 * @param minDistance minimum distance between the end points of preserved
+	 *          edges.
+	 * @param iterate if true then the graph is pruned iteratively until no new
+	 *          short edges are found. This can alter the topology of the graph
+	 *          more dramatically. If false, then the graph is pruned just once.
+	 *          It may still contain short edges that were created by the pruning
+	 *          process.
+	 * @param clustered if true then the method first finds all the sub-graphs
+	 *          where the vertices are connected to each other by short edges
+	 *          only. Each such sub-graph is then reduced to a single vertex at
+	 *          its center. If false, then each short edge is pruned individually.
+	 *          In this case the end result is affected by the order in which the
+	 *          edges are traversed.
+	 * @return a pruned copy of the graph.
+	 */
 	public static Graph pruneShortEdges(final Graph graph,
 		final double minDistance, final boolean iterate, final boolean clustered)
 	{
@@ -43,6 +66,47 @@ public final class GraphPruningUtils {
 			new double[] { 1.0, 1.0, 1.0 });
 	}
 
+	/**
+	 * Creates a copy of the graph, where short edges have been removed.
+	 * <p>
+	 * Edges are removed, if the distance between their end points is less than
+	 * the given limit. NB {@link Edge} may be arched, and its length can be
+	 * greater than this distance. When the method removes an edge, it creates a
+	 * new {@link Vertex} that's at the center of the end points of the Edge. If
+	 * pruning is clustered (see below) then the vertex is at the the center of
+	 * all the vertices removed. The new vertex connects to all the vertices the
+	 * deleted vertices connected to. For example, if an edge between the vertices
+	 * <b>A</b> & <b>B</b> is removed, and they connected to <b>C</b> & <b>D</b>
+	 * and <b>E</b> & <b>F</b> respectively, then the new vertex <b>A'</b>
+	 * connects to <b>C</b>, <b>D</b>, <b>E</b> and <b>F</b>. If one end vertex of
+	 * a short edge is a "dead end", that is, it connects to no other edges, then
+	 * it is simply deleted.
+	 * </p>
+	 * <p>
+	 * The method also removes parallel and loop edges.
+	 * </p>
+	 *
+	 * @param graph a graph from a skeleton.
+	 * @param minDistance minimum distance between the end points of preserved
+	 *          edges.
+	 * @param iterate if true then the graph is pruned iteratively until no new
+	 *          short edges are found. This can alter the topology of the graph
+	 *          more dramatically. If false, then the graph is pruned just once.
+	 *          It may still contain short edges that were created by the pruning
+	 *          process.
+	 * @param clustered if true then the method first finds all the sub-graphs
+	 *          where the vertices are connected to each other by short edges
+	 *          only. Each such sub-graph is then reduced to a single vertex at
+	 *          its center. If false, then each short edge is pruned individually.
+	 *          In this case the end result is affected by the order in which the
+	 *          edges are traversed.
+	 * @param voxelSize [x, y, z] voxel size in the skeleton image from which the
+	 *          graph was created. Affects the distance calculations between
+	 *          vertices.
+	 * @return a pruned copy of the graph.
+	 * @see #removeLoops(Graph)
+	 * @see #removeParallelEdges(Graph)
+	 */
 	public static Graph pruneShortEdges(final Graph graph,
 		final double minDistance, final boolean iterate, final boolean clustered,
 		final double[] voxelSize)
@@ -55,10 +119,10 @@ public final class GraphPruningUtils {
 			final int startSize = pruned.getVertices().size();
 			pruneDeadEnds(pruned, minDistance);
 			if (clustered) {
-				pruned = cleaningStep(pruned, minDistance, voxelSize);
+				pruned = clusteredPruning(pruned, minDistance, voxelSize);
 			}
 			else {
-				pruned = edgeCleaning(pruned, minDistance, voxelSize);
+				pruned = edgewisePruning(pruned, minDistance, voxelSize);
 			}
 			removeParallelEdges(pruned);
 			final int cleanedSize = pruned.getVertices().size();
@@ -115,6 +179,12 @@ public final class GraphPruningUtils {
 
 	// region -- Helper methods --
 
+	/**
+	 * Returns the center of the given points.
+	 *
+	 * @param points points of vertices in a {@link Graph}.
+	 * @return {x, y, z} coordinates of the centroid.
+	 */
 	private static double[] centroid(final Collection<Point> points) {
 		final double[] centroid = new double[3];
 		points.forEach(p -> {
@@ -128,8 +198,8 @@ public final class GraphPruningUtils {
 		return centroid;
 	}
 
-	private static Graph cleaningStep(final Graph graph, final double minDistance,
-		final double[] voxelSize)
+	private static Graph clusteredPruning(final Graph graph,
+		final double minDistance, final double[] voxelSize)
 	{
 		final List<Set<Vertex>> clusters = findClusters(graph, minDistance);
 		final List<Vertex> clusterCentres = clusters.stream().map(
@@ -162,8 +232,8 @@ public final class GraphPruningUtils {
 		final Collection<Vertex> clusterCentres, final Map<Edge, Edge> replacements,
 		final double[] voxelSize)
 	{
-		final Collection<Edge> clusterEdges = getClusterEdges(replacements,
-			voxelSize);
+		final Collection<Edge> clusterEdges = replacements.values().stream().peek(
+			e -> euclideanDistance(e, voxelSize)).collect(toList());
 		final List<Edge> nonClusterEdges = graph.getEdges().stream().filter(
 			e -> !replacements.containsKey(e) && isNotInClusters(e, clusters))
 			.collect(toList());
@@ -175,13 +245,13 @@ public final class GraphPruningUtils {
 		clusterCentres.forEach(cleanGraph::addVertex);
 		endpoints(nonClusterEdges).forEach(cleanGraph::addVertex);
 		endpoints(clusterEdges).forEach(cleanGraph::addVertex);
-		lonelyVertices(graph).forEach(cleanGraph::addVertex);
+		getUnconnectedVertices(graph).forEach(cleanGraph::addVertex);
 		removeDanglingBranches(cleanGraph);
 		return cleanGraph;
 	}
 
-	private static Graph edgeCleaning(final Graph graph, final double minDistance,
-		final double[] voxelSize)
+	private static Graph edgewisePruning(final Graph graph,
+		final double minDistance, final double[] voxelSize)
 	{
 		Graph cleanGraph = graph.clone();
 		final List<Edge> innerEdges = cleanGraph.getEdges().stream().filter(
@@ -201,6 +271,15 @@ public final class GraphPruningUtils {
 		return cleanGraph;
 	}
 
+	/**
+	 * Creates a stream of all the end vertices of the edges in the collection.
+	 * <p>
+	 * Each vertex is in the stream only once.
+	 * </p>
+	 *
+	 * @param edges a collection of edges of a graph.
+	 * @return a stream of end-point vertices.
+	 */
 	private static Stream<Vertex> endpoints(final Collection<Edge> edges) {
 		return edges.stream().flatMap(e -> Stream.of(e.getV1(), e.getV2()))
 			.distinct();
@@ -208,7 +287,11 @@ public final class GraphPruningUtils {
 
 	/**
 	 * Sets the length of the {@link Edge} to the calibrated euclidean distance
-	 * between its endpoints
+	 * between its endpoints.
+	 *
+	 * @param e an edge of a graph.
+	 * @param voxelSize [x, y, z] voxel size in the skeleton image from which the
+	 *          graph was created.
 	 */
 	private static void euclideanDistance(final Edge e,
 		final double[] voxelSize)
@@ -228,6 +311,10 @@ public final class GraphPruningUtils {
 	 * A vertex is in the cluster if its connected to the start directly or
 	 * indirectly via edges that have length less than the given distance.
 	 * </p>
+	 * 
+	 * @param start a vertex in the cluster.
+	 * @param minDistance distance limit between vertices in a cluster.
+	 * @return a cluster connected to the given vertex.
 	 */
 	private static Set<Vertex> fillCluster(final Vertex start,
 		final double minDistance)
@@ -246,20 +333,23 @@ public final class GraphPruningUtils {
 		return cluster;
 	}
 
-	/** Finds all the vertices that are in one of the graph's clusters */
+	/**
+	 * Finds all the vertices that are in one of the graph's clusters.
+	 * <p>
+	 * The method does not consider the number of clusters in the graph, but each
+	 * vertex can only be in one cluster.
+	 * </p>
+	 * 
+	 * @param graph a graph of a skeleton.
+	 * @param minDistance distance limit between vertices in a cluster.
+	 * @return all the vertices that belong to a cluster.
+	 */
 	private static List<Vertex> findClusterVertices(final Graph graph,
 		final double minDistance)
 	{
 		return graph.getEdges().stream().filter(e -> isShort(e, minDistance))
 			.flatMap(e -> Stream.of(e.getV1(), e.getV2())).distinct().collect(
 				toList());
-	}
-
-	private static Collection<Edge> getClusterEdges(
-		final Map<Edge, Edge> replacements, final double[] voxelSize)
-	{
-		return replacements.values().stream().peek(e -> euclideanDistance(e,
-			voxelSize)).collect(toList());
 	}
 
 	private static Set<Vertex> getEndpoints(final Edge edge) {
@@ -269,6 +359,28 @@ public final class GraphPruningUtils {
 		return pair;
 	}
 
+	/**
+	 * Finds all the unconnected vertices in the graph.
+	 * <p>
+	 * A vertex is unconnected if it has no branches.
+	 * </p>
+	 *
+	 * @param graph a skeleton graph.
+	 * @return a stream of lonely vertices. Each vertex is in the stream once.
+	 */
+	private static Stream<Vertex> getUnconnectedVertices(final Graph graph) {
+		return graph.getVertices().stream().filter(v -> v.getBranches().isEmpty())
+			.distinct();
+	}
+
+	/**
+	 * Checks if the edge is a dead end, i.e. it doesn't connect sub-graphs to
+	 * each other.
+	 *
+	 * @param e and edge in a graph.
+	 * @return true iff one of the end points of the edge has only one branch (the
+	 *         edge itself). If both have only one, the edge is not a dead-end.
+	 */
 	private static boolean isDeadEnd(final Edge e) {
 		return Stream.of(e.getV1(), e.getV2()).filter(v -> v.getBranches()
 			.size() == 1).count() == 1;
@@ -284,24 +396,35 @@ public final class GraphPruningUtils {
 		return edge.getV1() != null && edge.getV1() == edge.getV2();
 	}
 
+	/**
+	 * Checks if the edge is in a cluster.
+	 *
+	 * @param e an edge in the graph.
+	 * @param clusters all the clusters in the graph.
+	 * @return true if the edge is in any of the clusters. An edge can be 1 or 0
+	 *         clusters.
+	 */
 	private static boolean isNotInClusters(final Edge e,
-		final Collection<? extends Collection<Vertex>> clusters)
+		final Collection<Set<Vertex>> clusters)
 	{
 		return clusters.stream().noneMatch(c -> c.contains(e.getV1()) && c.contains(
 			e.getV2()));
 	}
 
+	/**
+	 * Calculates the length of a vector.
+	 *
+	 * @param v a [x, y, z] vector.
+	 * @param voxelSize [x, y, z] voxel size (calibration) in the skeleton image
+	 *          from which the graph was created.
+	 * @return the calibrated length of the vector.
+	 */
 	private static double length(final double[] v, final double[] voxelSize) {
 		final double x = v[0] * voxelSize[0];
 		final double y = v[1] * voxelSize[1];
 		final double z = v[2] * voxelSize[2];
 		final double sqSum = DoubleStream.of(x, y, z).map(d -> d * d).sum();
 		return Math.sqrt(sqSum);
-	}
-
-	private static Stream<Vertex> lonelyVertices(final Graph graph) {
-		return graph.getVertices().stream().filter(v -> v.getBranches().isEmpty())
-			.distinct();
 	}
 
 	/**
@@ -347,9 +470,11 @@ public final class GraphPruningUtils {
 			vertices::get, Function.identity()));
 	}
 
-	private static void pruneDeadEnds(final Graph graph, final double tolerance) {
+	private static void pruneDeadEnds(final Graph graph,
+		final double minDistance)
+	{
 		final List<Edge> deadEnds = graph.getEdges().stream().filter(e -> isDeadEnd(
-			e) && isShort(e, tolerance)).collect(toList());
+			e) && isShort(e, minDistance)).collect(toList());
 		final List<Vertex> terminals = deadEnds.stream().flatMap(e -> Stream.of(e
 			.getV1(), e.getV2())).filter(v -> v.getBranches().size() == 1).collect(
 				toList());
