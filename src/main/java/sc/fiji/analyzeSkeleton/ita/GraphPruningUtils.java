@@ -36,13 +36,16 @@ public final class GraphPruningUtils {
 
 	private GraphPruningUtils() {}
 
-	public static Graph pruneShortEdges(final Graph graph, final double tolerance,
-										final boolean iterate, final boolean clustered) {
-		return pruneShortEdges(graph, tolerance, iterate, clustered, new double[]{1.0, 1.0, 1.0});
+	public static Graph pruneShortEdges(final Graph graph,
+		final double minDistance, final boolean iterate, final boolean clustered)
+	{
+		return pruneShortEdges(graph, minDistance, iterate, clustered,
+			new double[] { 1.0, 1.0, 1.0 });
 	}
 
-	public static Graph pruneShortEdges(final Graph graph, final double tolerance,
-		final boolean iterate, final boolean clustered, final double[] voxelSize)
+	public static Graph pruneShortEdges(final Graph graph,
+		final double minDistance, final boolean iterate, final boolean clustered,
+		final double[] voxelSize)
 	{
 		Graph pruned = graph.clone();
 		boolean prune = true;
@@ -50,12 +53,12 @@ public final class GraphPruningUtils {
 		pruned.getEdges().forEach(e -> euclideanDistance(e, voxelSize));
 		while (prune) {
 			final int startSize = pruned.getVertices().size();
-			pruneDeadEnds(pruned, tolerance);
+			pruneDeadEnds(pruned, minDistance);
 			if (clustered) {
-				pruned = cleaningStep(pruned, tolerance, voxelSize);
+				pruned = cleaningStep(pruned, minDistance, voxelSize);
 			}
 			else {
-				pruned = edgeCleaning(pruned, tolerance, voxelSize);
+				pruned = edgeCleaning(pruned, minDistance, voxelSize);
 			}
 			removeParallelEdges(pruned);
 			final int cleanedSize = pruned.getVertices().size();
@@ -125,10 +128,10 @@ public final class GraphPruningUtils {
 		return centroid;
 	}
 
-	private static Graph cleaningStep(final Graph graph, final double tolerance,
+	private static Graph cleaningStep(final Graph graph, final double minDistance,
 		final double[] voxelSize)
 	{
-		final List<Set<Vertex>> clusters = findClusters(graph, tolerance);
+		final List<Set<Vertex>> clusters = findClusters(graph, minDistance);
 		final List<Vertex> clusterCentres = clusters.stream().map(
 			GraphPruningUtils::getClusterCentre).collect(toList());
 		final Map<Edge, Edge> replacements = mapReplacementEdges(clusters,
@@ -177,12 +180,12 @@ public final class GraphPruningUtils {
 		return cleanGraph;
 	}
 
-	private static Graph edgeCleaning(final Graph graph, final double tolerance,
+	private static Graph edgeCleaning(final Graph graph, final double minDistance,
 		final double[] voxelSize)
 	{
 		Graph cleanGraph = graph.clone();
 		final List<Edge> innerEdges = cleanGraph.getEdges().stream().filter(
-			e -> isShort(e, tolerance) && !isDeadEnd(e)).collect(toList());
+			e -> isShort(e, minDistance) && !isDeadEnd(e)).collect(toList());
 		for (final Edge innerEdge : innerEdges) {
 			final List<Set<Vertex>> pairs = new ArrayList<>();
 			pairs.add(getEndpoints(innerEdge));
@@ -220,14 +223,14 @@ public final class GraphPruningUtils {
 	}
 
 	/**
-	 * Finds all the vertices in the cluster that has the given vertex
+	 * Finds all the vertices in the cluster that has the given vertex.
 	 * <p>
 	 * A vertex is in the cluster if its connected to the start directly or
-	 * indirectly via edges that have length less than the given tolerance
+	 * indirectly via edges that have length less than the given distance.
 	 * </p>
 	 */
 	private static Set<Vertex> fillCluster(final Vertex start,
-		final Double tolerance)
+		final double minDistance)
 	{
 		final Set<Vertex> cluster = new HashSet<>();
 		final Stack<Vertex> stack = new Stack<>();
@@ -236,7 +239,7 @@ public final class GraphPruningUtils {
 			final Vertex vertex = stack.pop();
 			cluster.add(vertex);
 			final Set<Vertex> freeNeighbours = vertex.getBranches().stream().filter(
-				e -> isShort(e, tolerance)).map(e -> e.getOppositeVertex(vertex))
+				e -> isShort(e, minDistance)).map(e -> e.getOppositeVertex(vertex))
 				.filter(v -> !cluster.contains(v)).collect(toSet());
 			stack.addAll(freeNeighbours);
 		}
@@ -245,10 +248,11 @@ public final class GraphPruningUtils {
 
 	/** Finds all the vertices that are in one of the graph's clusters */
 	private static List<Vertex> findClusterVertices(final Graph graph,
-		final Double tolerance)
+		final double minDistance)
 	{
-		return graph.getEdges().stream().filter(e -> isShort(e, tolerance)).flatMap(
-			e -> Stream.of(e.getV1(), e.getV2())).distinct().collect(toList());
+		return graph.getEdges().stream().filter(e -> isShort(e, minDistance))
+			.flatMap(e -> Stream.of(e.getV1(), e.getV2())).distinct().collect(
+				toList());
 	}
 
 	private static Collection<Edge> getClusterEdges(
@@ -403,13 +407,14 @@ public final class GraphPruningUtils {
 	}
 
 	static List<Set<Vertex>> findClusters(final Graph graph,
-		final double tolerance)
+		final double minDistance)
 	{
 		final List<Set<Vertex>> clusters = new ArrayList<>();
-		final List<Vertex> clusterVertices = findClusterVertices(graph, tolerance);
+		final List<Vertex> clusterVertices = findClusterVertices(graph,
+			minDistance);
 		while (!clusterVertices.isEmpty()) {
 			final Vertex start = clusterVertices.get(0);
-			final Set<Vertex> cluster = fillCluster(start, tolerance);
+			final Set<Vertex> cluster = fillCluster(start, minDistance);
 			clusters.add(cluster);
 			clusterVertices.removeAll(cluster);
 		}
