@@ -4,12 +4,12 @@ package sc.fiji.analyzeSkeleton.ita;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.findClusters;
-import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.findEdgesWithOneEndInCluster;
-import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.getClusterCentre;
-import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.isShort;
-import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.pruneShortEdges;
-import static sc.fiji.analyzeSkeleton.ita.GraphPruningUtils.removeParallelEdges;
+import static sc.fiji.analyzeSkeleton.ita.GraphPruning.findClusters;
+import static sc.fiji.analyzeSkeleton.ita.GraphPruning.findEdgesWithOneEndInCluster;
+import static sc.fiji.analyzeSkeleton.ita.GraphPruning.getClusterCentre;
+import static sc.fiji.analyzeSkeleton.ita.GraphPruning.isShort;
+import static sc.fiji.analyzeSkeleton.ita.GraphPruning.pruneShortEdges;
+import static sc.fiji.analyzeSkeleton.ita.GraphPruning.removeParallelEdges;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,12 +29,12 @@ import sc.fiji.analyzeSkeleton.Point;
 import sc.fiji.analyzeSkeleton.Vertex;
 
 /**
- * Tests for {@link GraphPruningUtils}.
+ * Tests for {@link GraphPruning}.
  *
  * @author Richard Domander
  * @author Alessandro Felder
  */
-public class GraphPruningUtilsTest {
+public class GraphPruningTest {
 
 	private static final double[] ISOTROPIC = { 1.0, 1.0, 1.0 };
 
@@ -46,7 +46,7 @@ public class GraphPruningUtilsTest {
 
 		// EXECUTE
 		final List<Vertex> centres = clusters.stream().map(
-			GraphPruningUtils::getClusterCentre).collect(Collectors.toList());
+			GraphPruning::getClusterCentre).collect(Collectors.toList());
 
 		// VERIFY
 		assertTrue(centres.stream().allMatch(c -> c.getPoints().size() == 1));
@@ -193,7 +193,7 @@ public class GraphPruningUtilsTest {
 
 		// EXECUTE
 		final List<Vertex> centres = clusters.stream().map(
-			GraphPruningUtils::getClusterCentre).collect(Collectors.toList());
+			GraphPruning::getClusterCentre).collect(Collectors.toList());
 
 		// VERIFY
 		assertTrue(centres.stream().allMatch(c -> c.getPoints().size() == 1));
@@ -229,7 +229,7 @@ public class GraphPruningUtilsTest {
 		final Graph segmentGraph = createLineGraph();
 
 		// EXECUTE
-		final Graph cleanSegmentGraph = GraphPruningUtils.pruneShortEdges(
+		final Graph cleanSegmentGraph = GraphPruning.pruneShortEdges(
 			segmentGraph, 4.01, false, false, ISOTROPIC);
 
 		// VERIFY
@@ -345,7 +345,7 @@ public class GraphPruningUtilsTest {
 		final Graph loopGraph = createLoopGraph();
 
 		// EXECUTE
-		final Graph cleanLoopGraph = GraphPruningUtils.pruneShortEdges(loopGraph,
+		final Graph cleanLoopGraph = GraphPruning.pruneShortEdges(loopGraph,
 			0.0, false, true, ISOTROPIC);
 
 		// VERIFY

@@ -32,9 +32,9 @@ import sc.fiji.analyzeSkeleton.Vertex;
  * @author Richard Domander
  * @author Alessandro Felder
  */
-public final class GraphPruningUtils {
+public final class GraphPruning {
 
-	private GraphPruningUtils() {}
+	private GraphPruning() {}
 
 	/**
 	 * Creates a copy of the graph, where short edges have been removed.
@@ -139,8 +139,8 @@ public final class GraphPruningUtils {
 	 */
 	public static void removeLoops(final Graph graph) {
 		final List<Edge> loops = graph.getEdges().stream().filter(
-			GraphPruningUtils::isLoop).collect(toList());
-		loops.forEach(GraphPruningUtils::removeBranchFromEndpoints);
+			GraphPruning::isLoop).collect(toList());
+		loops.forEach(GraphPruning::removeBranchFromEndpoints);
 		graph.getEdges().removeAll(loops);
 	}
 
@@ -173,7 +173,7 @@ public final class GraphPruningUtils {
 				parallelEdges.add(edge);
 			}
 		});
-		parallelEdges.forEach(GraphPruningUtils::removeBranchFromEndpoints);
+		parallelEdges.forEach(GraphPruning::removeBranchFromEndpoints);
 		graph.getEdges().removeAll(parallelEdges);
 	}
 
@@ -203,7 +203,7 @@ public final class GraphPruningUtils {
 	{
 		final List<Set<Vertex>> clusters = findClusters(graph, minDistance);
 		final List<Vertex> clusterCentres = clusters.stream().map(
-			GraphPruningUtils::getClusterCentre).collect(toList());
+			GraphPruning::getClusterCentre).collect(toList());
 		final Map<Edge, Edge> replacements = mapReplacementEdges(clusters,
 			clusterCentres);
 		return createCleanGraph(graph, clusters, clusterCentres, replacements,
@@ -260,7 +260,7 @@ public final class GraphPruningUtils {
 			final List<Set<Vertex>> pairs = new ArrayList<>();
 			pairs.add(getEndpoints(innerEdge));
 			final List<Vertex> centroids = pairs.stream().map(
-				GraphPruningUtils::getClusterCentre).collect(toList());
+				GraphPruning::getClusterCentre).collect(toList());
 			final Map<Edge, Edge> replacements = mapReplacementEdges(pairs,
 				centroids);
 			final Graph tmp = createCleanGraph(cleanGraph, pairs, centroids,
@@ -479,7 +479,7 @@ public final class GraphPruningUtils {
 			.getV1(), e.getV2())).filter(v -> v.getBranches().size() == 1).collect(
 				toList());
 		graph.getVertices().removeAll(terminals);
-		deadEnds.forEach(GraphPruningUtils::removeBranchFromEndpoints);
+		deadEnds.forEach(GraphPruning::removeBranchFromEndpoints);
 		graph.getEdges().removeAll(deadEnds);
 	}
 
