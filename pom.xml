@@ -136,6 +136,12 @@
 			<artifactId>ij</artifactId>
 		</dependency>
 
+		<!-- Other dependencies -->
+		<dependency>
+			<groupId>org.joml</groupId>
+			<artifactId>joml</artifactId>
+		</dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
