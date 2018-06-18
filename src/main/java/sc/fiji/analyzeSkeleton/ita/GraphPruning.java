@@ -180,19 +180,6 @@ public final class GraphPruning {
 
 	// region -- Helper methods --
 
-	/**
-	 * Returns the center of the given points.
-	 *
-	 * @param points points of vertices in a {@link Graph}.
-	 * @return {x, y, z} coordinates of the centroid.
-	 */
-	private static Vector3d centroid(final Collection<Point> points) {
-		final Vector3d centroid = new Vector3d();
-		points.forEach(p -> centroid.add(p.x, p.y, p.z));
-		centroid.div(points.size());
-		return centroid;
-	}
-
 	private static Graph clusteredPruning(final Graph graph,
 		final double minDistance, final double[] voxelSize)
 	{
@@ -291,8 +278,8 @@ public final class GraphPruning {
 	private static void euclideanDistance(final Edge e,
 		final double[] voxelSize)
 	{
-		final Vector3d centre = centroid(e.getV1().getPoints());
-		final Vector3d centre2 = centroid(e.getV2().getPoints());
+		final Vector3d centre = Util.centroid(e.getV1().getPoints());
+		final Vector3d centre2 = Util.centroid(e.getV2().getPoints());
 		centre.sub(centre2);
 		final double l = length(centre, voxelSize);
 		e.setLength(l);
@@ -564,7 +551,7 @@ public final class GraphPruning {
 	static Vertex getClusterCentre(final Set<Vertex> cluster) {
 		final Collection<Point> points = cluster.stream().flatMap(c -> c.getPoints()
 			.stream()).collect(toList());
-		final Vector3d centroid = centroid(points);
+		final Vector3d centroid = Util.centroid(points);
 		final int[] coordinates = realToIntegerCoordinate(centroid);
 		final Vertex vertex = new Vertex();
 		vertex.addPoint(new Point(coordinates[0], coordinates[1], coordinates[2]));
