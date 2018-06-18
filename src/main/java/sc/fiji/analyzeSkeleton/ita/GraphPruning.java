@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +18,8 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import org.joml.Vector3d;
 
 import sc.fiji.analyzeSkeleton.Edge;
 import sc.fiji.analyzeSkeleton.Graph;
@@ -185,16 +186,10 @@ public final class GraphPruning {
 	 * @param points points of vertices in a {@link Graph}.
 	 * @return {x, y, z} coordinates of the centroid.
 	 */
-	private static double[] centroid(final Collection<Point> points) {
-		final double[] centroid = new double[3];
-		points.forEach(p -> {
-			centroid[0] += p.x;
-			centroid[1] += p.y;
-			centroid[2] += p.z;
-		});
-		for (int i = 0; i < centroid.length; i++) {
-			centroid[i] /= points.size();
-		}
+	private static Vector3d centroid(final Collection<Point> points) {
+		final Vector3d centroid = new Vector3d();
+		points.forEach(p -> centroid.add(p.x, p.y, p.z));
+		centroid.div(points.size());
 		return centroid;
 	}
 
@@ -296,11 +291,9 @@ public final class GraphPruning {
 	private static void euclideanDistance(final Edge e,
 		final double[] voxelSize)
 	{
-		final double[] centre = centroid(e.getV1().getPoints());
-		final double[] centre2 = centroid(e.getV2().getPoints());
-		for (int i = 0; i < centre.length; i++) {
-			centre[i] -= centre2[i];
-		}
+		final Vector3d centre = centroid(e.getV1().getPoints());
+		final Vector3d centre2 = centroid(e.getV2().getPoints());
+		centre.sub(centre2);
 		final double l = length(centre, voxelSize);
 		e.setLength(l);
 	}
@@ -419,10 +412,10 @@ public final class GraphPruning {
 	 *          from which the graph was created.
 	 * @return the calibrated length of the vector.
 	 */
-	private static double length(final double[] v, final double[] voxelSize) {
-		final double x = v[0] * voxelSize[0];
-		final double y = v[1] * voxelSize[1];
-		final double z = v[2] * voxelSize[2];
+	private static double length(final Vector3d v, final double[] voxelSize) {
+		final double x = v.x * voxelSize[0];
+		final double y = v.y * voxelSize[1];
+		final double z = v.z * voxelSize[2];
 		final double sqSum = DoubleStream.of(x, y, z).map(d -> d * d).sum();
 		return Math.sqrt(sqSum);
 	}
@@ -483,8 +476,8 @@ public final class GraphPruning {
 		graph.getEdges().removeAll(deadEnds);
 	}
 
-	private static int[] realToIntegerCoordinate(final double[] centroid) {
-		return Arrays.stream(centroid).mapToInt(d -> Double.isNaN(d)
+	private static int[] realToIntegerCoordinate(final Vector3d v) {
+		return Stream.of(v.x, v.y, v.z).mapToInt(d -> Double.isNaN(d)
 			? Integer.MAX_VALUE : (int) Math.round(d)).toArray();
 	}
 
@@ -571,7 +564,7 @@ public final class GraphPruning {
 	static Vertex getClusterCentre(final Set<Vertex> cluster) {
 		final Collection<Point> points = cluster.stream().flatMap(c -> c.getPoints()
 			.stream()).collect(toList());
-		final double[] centroid = centroid(points);
+		final Vector3d centroid = centroid(points);
 		final int[] coordinates = realToIntegerCoordinate(centroid);
 		final Vertex vertex = new Vertex();
 		vertex.addPoint(new Point(coordinates[0], coordinates[1], coordinates[2]));
