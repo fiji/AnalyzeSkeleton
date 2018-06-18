@@ -229,8 +229,8 @@ public class GraphPruningTest {
 		final Graph segmentGraph = createLineGraph();
 
 		// EXECUTE
-		final Graph cleanSegmentGraph = GraphPruning.pruneShortEdges(
-			segmentGraph, 4.01, false, false, ISOTROPIC);
+		final Graph cleanSegmentGraph = GraphPruning.pruneShortEdges(segmentGraph,
+			4.01, false, false, ISOTROPIC);
 
 		// VERIFY
 		assertEquals(3, cleanSegmentGraph.getVertices().size());
@@ -345,8 +345,8 @@ public class GraphPruningTest {
 		final Graph loopGraph = createLoopGraph();
 
 		// EXECUTE
-		final Graph cleanLoopGraph = GraphPruning.pruneShortEdges(loopGraph,
-			0.0, false, true, ISOTROPIC);
+		final Graph cleanLoopGraph = GraphPruning.pruneShortEdges(loopGraph, 0.0,
+			false, true, ISOTROPIC);
 
 		// VERIFY
 		assertEquals(3, cleanLoopGraph.getEdges().size());
@@ -414,7 +414,7 @@ public class GraphPruningTest {
 		final List<Edge> edges = Arrays.asList(new Edge(vertices.get(0), vertices
 			.get(1), null, 0), new Edge(vertices.get(1), vertices.get(0), null, 0),
 			new Edge(vertices.get(0), vertices.get(1), null, 0));
-		final Graph graph = createGraph(edges, vertices);
+		final Graph graph = TestUtil.createGraph(edges, vertices);
 
 		// EXECUTE
 		removeParallelEdges(graph);
@@ -532,7 +532,7 @@ public class GraphPruningTest {
 						4.0)), new Edge(vertices.get(3), vertices.get(5), null, Math.sqrt(
 							4.0)), new Edge(vertices.get(2), vertices.get(6), null, 2.0),
 			new Edge(vertices.get(3), vertices.get(7), null, 2.0));
-		return createGraph(edges, vertices);
+		return TestUtil.createGraph(edges, vertices);
 	}
 
 	/**
@@ -563,30 +563,7 @@ public class GraphPruningTest {
 			new Edge(vertices.get(5), vertices.get(3), null, Math.sqrt(2.0)),
 			new Edge(vertices.get(1), vertices.get(3), null, 3.0));
 
-		return createGraph(edges, vertices);
-	}
-
-	/**
-	 * Creates a {@link Graph}, and adds the given edges and vertices to it.
-	 * <p>
-	 * NB Adds edges as branches of their end points. The connections between the
-	 * vertices are defined in the {@link Edge} and {@link Vertex} classes.
-	 * </p>
-	 *
-	 * @see Edge#getV1()
-	 * @see Edge#getV2()
-	 * @see Vertex#getBranches()
-	 * @param edges edges of the graph.
-	 * @param vertices vertices of the graph.
-	 * @return A graph that contains the vertices and the edge.
-	 */
-	private static Graph createGraph(final Iterable<Edge> edges,
-		final Iterable<Vertex> vertices)
-	{
-		final Graph graph = new Graph();
-		edges.forEach(graph::addEdge);
-		vertices.forEach(graph::addVertex);
-		return graph;
+		return TestUtil.createGraph(edges, vertices);
 	}
 
 	/**
@@ -615,7 +592,7 @@ public class GraphPruningTest {
 				1.0), new Edge(vertices.get(1), vertices.get(3), null, Math.sqrt(3.0)),
 			new Edge(vertices.get(2), vertices.get(3), null, Math.sqrt(3.0)),
 			new Edge(vertices.get(3), vertices.get(4), null, 3 * Math.sqrt(2.0)));
-		return createGraph(edges, vertices);
+		return TestUtil.createGraph(edges, vertices);
 	}
 
 	/**
@@ -640,7 +617,7 @@ public class GraphPruningTest {
 				4.0), new Edge(vertices.get(2), vertices.get(3), null, 4.0), new Edge(
 					vertices.get(3), vertices.get(4), null, 12.0));
 
-		return createGraph(edges, vertices);
+		return TestUtil.createGraph(edges, vertices);
 	}
 
 	/**
@@ -669,7 +646,7 @@ public class GraphPruningTest {
 				1.0), new Edge(vertices.get(0), vertices.get(2), null, 1.0), new Edge(
 					vertices.get(1), vertices.get(2), null, 2.0));
 
-		return createGraph(edges, vertices);
+		return TestUtil.createGraph(edges, vertices);
 	}
 
 	/**
@@ -700,7 +677,7 @@ public class GraphPruningTest {
 			.get(1), null, 2.0), new Edge(vertices.get(0), vertices.get(2), null,
 				3.0), new Edge(vertices.get(1), vertices.get(2), null, Math.sqrt(13.0)),
 			new Edge(vertices.get(0), vertices.get(3), null, 1.0));
-		return createGraph(edges, vertices);
+		return TestUtil.createGraph(edges, vertices);
 	}
 
 	/**
@@ -725,7 +702,7 @@ public class GraphPruningTest {
 		final ArrayList<Point> slabs = new ArrayList<>(slabPoints);
 		final Edge edge = new Edge(vertices.get(0), vertices.get(1), slabs, 4 * Math
 			.sqrt(2.0) + 1);
-		return createGraph(Collections.singleton(edge), vertices);
+		return TestUtil.createGraph(Collections.singleton(edge), vertices);
 	}
 
 	/**
@@ -761,7 +738,7 @@ public class GraphPruningTest {
 								vertices.get(5), null, 5.0), new Edge(vertices.get(4), vertices
 									.get(6), null, 9.0), new Edge(vertices.get(5), vertices.get(
 										6), null, 9.0));
-		return createGraph(edges, vertices);
+		return TestUtil.createGraph(edges, vertices);
 	}
 
 	/**
@@ -808,7 +785,7 @@ public class GraphPruningTest {
 			new Edge(vertices.get(6), vertices.get(6), null, 9.0), // loop
 			new Edge(vertices.get(4), vertices.get(4), null, 9.0) // loop
 		);
-		return createGraph(edges, vertices);
+		return TestUtil.createGraph(edges, vertices);
 	}
 
 	private static boolean hasPoint(final Edge edge, final Point point) {
