@@ -378,6 +378,24 @@ public class GraphPruningTest {
 	}
 
 	@Test
+	public void testPruneShortEdgesStats() {
+		// SETUP
+		final Graph graphWithArtefacts =
+			createTriangleWithSquareClusterAndArtefacts();
+
+		// EXECUTE
+		final double[] stats = pruneShortEdges(graphWithArtefacts, 2.01, false,
+			true, ISOTROPIC).b;
+
+		// VERIFY
+		assertEquals(3.0 / 15.0 * 100.0, stats[0], 1e-12);
+		assertEquals(1.0 / 15.0 * 100.0, stats[1], 1e-12);
+		assertEquals(2.0 / 15.0 * 100.0, stats[2], 1e-12);
+		assertEquals(5.0 / 15.0 * 100.0, stats[3], 1e-12);
+		assertEquals(graphWithArtefacts.getEdges().size(), stats[4], 1e-12);
+	}
+
+	@Test
 	public void testPruneShortEdgesTriangleWithSquareCluster() {
 		// SETUP
 		final Graph squareWithDiagAndLooseEnds = createTriangleWithSquareCluster();
