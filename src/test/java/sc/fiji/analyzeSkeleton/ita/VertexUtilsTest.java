@@ -19,18 +19,18 @@ import sc.fiji.analyzeSkeleton.Point;
 import sc.fiji.analyzeSkeleton.Vertex;
 
 /**
- * Tests for {@link NJunctions}.
+ * Tests for {@link VertexUtils}.
  *
  * @author Richard Domander
  * @author Alessandro Felder
  */
-public class NJunctionsTest {
+public class VertexUtilsTest {
 
 	@Test
 	public void testNJunctionAnglesFrameGraph() {
 		final Graph frameGraph = createFrameGraph();
 
-		final List<List<Double>> nJunctions = NJunctions.getNJunctionAngles(
+		final List<List<Double>> nJunctions = VertexUtils.getNJunctionAngles(
 			frameGraph.getVertices());
 
 		assertEquals(4, nJunctions.size());
@@ -45,7 +45,7 @@ public class NJunctionsTest {
 	public void testNJunctionAnglesLonelyVertex() {
 		final Vertex lonelyVertex = new Vertex();
 
-		final List<List<Double>> nJunctions = NJunctions.getNJunctionAngles(
+		final List<List<Double>> nJunctions = VertexUtils.getNJunctionAngles(
 			singletonList(lonelyVertex));
 
 		assertNotNull(nJunctions);
@@ -64,7 +64,7 @@ public class NJunctionsTest {
 		// etc.
 		TestUtil.createGraph(singletonList(edge), vertices);
 
-		final List<List<Double>> nJunctions = NJunctions.getNJunctionAngles(
+		final List<List<Double>> nJunctions = VertexUtils.getNJunctionAngles(
 			vertices);
 
 		assertEquals(2, nJunctions.size());

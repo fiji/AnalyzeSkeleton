@@ -21,9 +21,9 @@ import sc.fiji.analyzeSkeleton.Vertex;
  * @author Richard Domander
  * @author Alessandro Felder
  */
-public final class NJunctions {
+public final class VertexUtils {
 
-	private NJunctions() {}
+	private VertexUtils() {}
 
 	/**
 	 * Calculates the angles between the branches of each vertex.
