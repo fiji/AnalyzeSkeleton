@@ -4,6 +4,9 @@ package sc.fiji.analyzeSkeleton.ita;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.joml.Vector3d;
 
@@ -47,6 +50,37 @@ public final class NJunctions {
 			graphAngles.add(junctionAngles);
 		}
 		return graphAngles;
+	}
+
+	/**
+	 * Groups vertices by their valence, i.e. by their number of branches.
+	 * <p>
+	 * Only vertices with valence in the given range are grouped.
+	 * </p>
+	 *
+	 * @param vertices vertices from a graph
+	 * @param min minimum valance (inclusive) for grouped vertices
+	 * @param max maximum valence (inclusive) for grouped vertices
+	 * @return a (Valence, Vertices with valence) mapping.
+	 * @throws IllegalArgumentException if min &lt; 0, or min &gt max.
+	 */
+	public static Map<Integer, List<Vertex>> groupByValence(
+		final Collection<Vertex> vertices, final int min, final int max)
+		throws IllegalArgumentException
+	{
+		if (min < 0) {
+			throw new IllegalArgumentException("Minimum must be non-negative");
+		}
+		if (min > max) {
+			throw new IllegalArgumentException(
+				"Minimum must be less or equal to maximum");
+		}
+		final Predicate<Vertex> isInValenceRange = v -> {
+			final int valence = v.getBranches().size();
+			return min <= valence && valence <= max;
+		};
+		return vertices.stream().filter(isInValenceRange).collect(Collectors
+			.groupingBy(v -> v.getBranches().size()));
 	}
 
 	// region -- Helper methods --
