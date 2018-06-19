@@ -19,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 package sc.fiji.analyzeSkeleton.ita;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -38,6 +39,8 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import net.imglib2.util.ValuePair;
 
 import org.joml.Vector3d;
 
@@ -78,9 +81,13 @@ public final class GraphPruning {
 	 *          its center. If false, then each short edge is pruned individually.
 	 *          In this case the end result is affected by the order in which the
 	 *          edges are traversed.
-	 * @return a pruned copy of the graph.
+	 * @return a pruned copy of the graph and the following pruning statistics: %
+	 *         loop edges, % dead ends, % parallel edges, % other pruned edges and
+	 *         total number of edges in the original graph. The percentages are in
+	 *         relation to the total edges.
+	 * @see #pruneShortEdges(Graph, double, boolean, boolean, double[])
 	 */
-	public static Graph pruneShortEdges(final Graph graph,
+	public static ValuePair<Graph, double[]> pruneShortEdges(final Graph graph,
 		final double minDistance, final boolean iterate, final boolean clustered)
 	{
 		return pruneShortEdges(graph, minDistance, iterate, clustered,
@@ -124,21 +131,33 @@ public final class GraphPruning {
 	 * @param voxelSize [x, y, z] voxel size in the skeleton image from which the
 	 *          graph was created. Affects the distance calculations between
 	 *          vertices.
-	 * @return a pruned copy of the graph.
-	 * @see #removeLoops(Graph)
+	 * @return a pruned copy of the graph and the following pruning statistics: %
+	 *         loop edges, % dead ends, % parallel edges, % other pruned edges and
+	 *         total number of edges in the original graph. The percentages are in
+	 *         relation to the total edges.
+	 * @see #isLoop(Edge)
+	 * @see #isDeadEnd(Edge)
 	 * @see #removeParallelEdges(Graph)
 	 */
-	public static Graph pruneShortEdges(final Graph graph,
+	public static ValuePair<Graph, double[]> pruneShortEdges(final Graph graph,
 		final double minDistance, final boolean iterate, final boolean clustered,
 		final double[] voxelSize)
 	{
 		Graph pruned = graph.clone();
 		boolean prune = true;
 		removeLoops(pruned);
+		final int sansLoops = pruned.getEdges().size();
+		final int loops = graph.getEdges().size() - sansLoops;
+		removeParallelEdges(pruned);
+		final int parallel = sansLoops - pruned.getEdges().size();
+		int otherPruned = 0;
+		int deadEnds = 0;
 		pruned.getEdges().forEach(e -> euclideanDistance(e, voxelSize));
 		while (prune) {
 			final int startSize = pruned.getVertices().size();
+			final int startEdges = pruned.getEdges().size();
 			pruneDeadEnds(pruned, minDistance);
+			deadEnds += startEdges - pruned.getEdges().size();
 			if (clustered) {
 				pruned = clusteredPruning(pruned, minDistance, voxelSize);
 			}
@@ -146,10 +165,14 @@ public final class GraphPruning {
 				pruned = edgewisePruning(pruned, minDistance, voxelSize);
 			}
 			removeParallelEdges(pruned);
+			otherPruned += startEdges - deadEnds - pruned.getEdges().size();
 			final int cleanedSize = pruned.getVertices().size();
 			prune = iterate && startSize != cleanedSize;
 		}
-		return pruned;
+		final int total = graph.getEdges().size();
+		final double[] stats = calculateStats(loops, deadEnds, parallel,
+			otherPruned, total);
+		return new ValuePair<>(pruned, stats);
 	}
 
 	/**
@@ -199,6 +222,18 @@ public final class GraphPruning {
 	}
 
 	// region -- Helper methods --
+
+	private static double[] calculateStats(final int loops, final int deadEnds,
+		final int parallel, final int otherPruned, final int total)
+	{
+		final double deadEndPct = 100.0 * deadEnds / total;
+		final double parallelPct = 100.0 * parallel / total;
+		final double loopPct = 100.0 * loops / total;
+		final double otherPrunedPct = 100.0 * otherPruned / total;
+
+		return new double[] { loopPct, deadEndPct, parallelPct, otherPrunedPct,
+			total };
+	}
 
 	private static Graph clusteredPruning(final Graph graph,
 		final double minDistance, final double[] voxelSize)

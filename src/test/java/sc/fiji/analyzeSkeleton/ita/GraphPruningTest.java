@@ -207,7 +207,7 @@ public class GraphPruningTest {
 
 		// EXECUTE
 		final Graph cleanSailGraph = pruneShortEdges(sailGraph, 0, false, true,
-			calibration);
+			calibration).a;
 
 		// VERIFY
 		assertEquals(4, cleanSailGraph.getEdges().size());
@@ -230,7 +230,7 @@ public class GraphPruningTest {
 
 		// EXECUTE
 		final Graph cleanSegmentGraph = GraphPruning.pruneShortEdges(segmentGraph,
-			4.01, false, false, ISOTROPIC);
+			4.01, false, false, ISOTROPIC).a;
 
 		// VERIFY
 		assertEquals(3, cleanSegmentGraph.getVertices().size());
@@ -249,7 +249,7 @@ public class GraphPruningTest {
 		final Graph arch = createSlabArchGraph();
 
 		// EXECUTE
-		final Graph cleanArch = pruneShortEdges(arch, 0, false, true);
+		final Graph cleanArch = pruneShortEdges(arch, 0, false, true).a;
 
 		// VERIFY
 		assertEquals(5, cleanArch.getEdges().get(0).getLength(), 1e-12);
@@ -262,7 +262,7 @@ public class GraphPruningTest {
 
 		// EXECUTE
 		final Graph cleanEmptyGraph = pruneShortEdges(emptyGraph, 2.01, false, true,
-			new double[] {});
+			new double[] {}).a;
 
 		// VERIFY
 		assertNotNull(cleanEmptyGraph);
@@ -291,9 +291,9 @@ public class GraphPruningTest {
 
 		// EXECUTE
 		final Graph cleanedOnce = pruneShortEdges(doorknob, 2.01, false, true,
-			ISOTROPIC);
+			ISOTROPIC).a;
 		final Graph cleanedTwice = pruneShortEdges(doorknob, 2.01, true, true,
-			ISOTROPIC);
+			ISOTROPIC).a;
 
 		// VERIFY
 		assertEquals(4, cleanedOnce.getVertices().size());
@@ -313,7 +313,7 @@ public class GraphPruningTest {
 
 		// EXECUTE
 		final Graph cleanOneVertexGraph = pruneShortEdges(oneVertexGraph,
-			Double.POSITIVE_INFINITY, false, true, new double[] {});
+			Double.POSITIVE_INFINITY, false, true, new double[] {}).a;
 
 		// VERIFY
 		assertEquals(1, cleanOneVertexGraph.getVertices().size());
@@ -330,7 +330,7 @@ public class GraphPruningTest {
 
 		// EXECUTE
 		final Graph result = pruneShortEdges(graph, Double.POSITIVE_INFINITY, false,
-			true, ISOTROPIC);
+			true, ISOTROPIC).a;
 
 		// VERIFY
 		final int size = result.getEdges().size();
@@ -346,7 +346,7 @@ public class GraphPruningTest {
 
 		// EXECUTE
 		final Graph cleanLoopGraph = GraphPruning.pruneShortEdges(loopGraph, 0.0,
-			false, true, ISOTROPIC);
+			false, true, ISOTROPIC).a;
 
 		// VERIFY
 		assertEquals(3, cleanLoopGraph.getEdges().size());
@@ -361,7 +361,7 @@ public class GraphPruningTest {
 
 		// EXECUTE
 		final Graph cleanSailGraph = pruneShortEdges(sailGraph, 1.01, false, true,
-			ISOTROPIC);
+			ISOTROPIC).a;
 
 		// VERIFY
 		assertEquals(3, cleanSailGraph.getEdges().size());
@@ -386,7 +386,7 @@ public class GraphPruningTest {
 
 		// EXECUTE
 		final Graph cleaned = pruneShortEdges(squareWithDiagAndLooseEnds, 2.01,
-			false, true, ISOTROPIC);
+			false, true, ISOTROPIC).a;
 
 		// VERIFY
 		assertNotNull(cleaned);
