@@ -104,11 +104,11 @@ public final class GraphPruning {
 	 * pruning is clustered (see below) then the vertex is at the the center of
 	 * all the vertices removed. The new vertex connects to all the vertices the
 	 * deleted vertices connected to. For example, if an edge between the vertices
-	 * <b>A</b> & <b>B</b> is removed, and they connected to <b>C</b> & <b>D</b>
-	 * and <b>E</b> & <b>F</b> respectively, then the new vertex <b>A'</b>
-	 * connects to <b>C</b>, <b>D</b>, <b>E</b> and <b>F</b>. If one end vertex of
-	 * a short edge is a "dead end", that is, it connects to no other edges, then
-	 * it is simply deleted.
+	 * <b>A</b> &amp; <b>B</b> is removed, and they connected to <b>C</b> &amp;
+	 * <b>D</b> and <b>E</b> &amp; <b>F</b> respectively, then the new vertex
+	 * <b>A'</b> connects to <b>C</b>, <b>D</b>, <b>E</b> and <b>F</b>. If one end
+	 * vertex of a short edge is a "dead end", that is, it connects to no other
+	 * edges, then it is simply deleted.
 	 * </p>
 	 * <p>
 	 * The method also removes parallel and loop edges.

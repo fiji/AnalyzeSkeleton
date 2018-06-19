@@ -82,7 +82,7 @@ public final class VertexUtils {
 	 * @param min minimum valance (inclusive) for grouped vertices
 	 * @param max maximum valence (inclusive) for grouped vertices
 	 * @return a (Valence, Vertices with valence) mapping.
-	 * @throws IllegalArgumentException if min &lt; 0, or min &gt max.
+	 * @throws IllegalArgumentException if min &lt; 0, or min &gt; max.
 	 */
 	public static Map<Integer, List<Vertex>> groupByValence(
 		final Collection<Vertex> vertices, final int min, final int max)
