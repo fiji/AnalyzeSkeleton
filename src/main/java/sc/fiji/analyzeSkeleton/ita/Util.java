@@ -7,7 +7,10 @@ import sc.fiji.analyzeSkeleton.Point;
 import java.util.Collection;
 
 /**
+ * Utility methods for the classes of the ita package.
+ *
  * @author Richard Domander
+ * @author Alessandro Felder
  */
 final class Util {
 	private Util() {}
