@@ -25,8 +25,8 @@ import sc.fiji.analyzeSkeleton.Vertex;
 /**
  * Tests for {@link VertexUtils}.
  *
- * @author Richard Domander
- * @author Alessandro Felder
+ * @author Richard Domander (Royal Veterinary College, London)
+ * @author Alessandro Felder (Royal Veterinary College, London)
  */
 public class VertexUtilsTest {
 

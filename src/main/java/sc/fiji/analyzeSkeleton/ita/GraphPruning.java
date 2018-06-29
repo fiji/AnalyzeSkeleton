@@ -53,8 +53,8 @@ import sc.fiji.analyzeSkeleton.Vertex;
  * Utility functions for pruning certain kinds of edges (and nodes) from a
  * {@link Graph}.
  *
- * @author Richard Domander
- * @author Alessandro Felder
+ * @author Richard Domander (Royal Veterinary College, London)
+ * @author Alessandro Felder (Royal Veterinary College, London)
  */
 public final class GraphPruning {
 

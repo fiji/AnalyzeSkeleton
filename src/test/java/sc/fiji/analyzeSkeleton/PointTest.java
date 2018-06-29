@@ -9,7 +9,7 @@ import org.junit.Test;
 /**
  * Tests for {@link Point}
  *
- * @author Richard Domander
+ * @author Richard Domander (Royal Veterinary College, London)
  */
 public class PointTest {
 

@@ -8,8 +8,8 @@ import sc.fiji.analyzeSkeleton.Vertex;
 /**
  * Utility methods shared by the test classes.
  *
- * @author Richard Domander
- * @author Alessandro Felder
+ * @author Richard Domander (Royal Veterinary College, London)
+ * @author Alessandro Felder (Royal Veterinary College, London)
  */
 class TestUtil {
 
