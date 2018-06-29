@@ -19,13 +19,15 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 package sc.fiji.analyzeSkeleton.ita;
 
-import org.joml.Vector3d;
-import sc.fiji.analyzeSkeleton.Graph;
-import sc.fiji.analyzeSkeleton.Point;
-
 import java.util.Collection;
+
+import org.joml.Vector3d;
+
+import sc.fiji.analyzeSkeleton.Point;
+import sc.fiji.analyzeSkeleton.Vertex;
 
 /**
  * Utility methods for the classes of the ita package.
@@ -33,16 +35,17 @@ import java.util.Collection;
  * @author Richard Domander
  * @author Alessandro Felder
  */
-final class Util {
-	private Util() {}
+public final class PointUtils {
+
+	private PointUtils() {}
 
 	/**
 	 * Returns the center of the given points.
 	 *
-	 * @param points points of vertices in a {@link Graph}.
+	 * @param points points of a {@link Vertex}.
 	 * @return {x, y, z} coordinates of the centroid.
 	 */
-	static Vector3d centroid(final Collection<Point> points) {
+	public static Vector3d centroid(final Collection<Point> points) {
 		final Vector3d centroid = new Vector3d();
 		points.forEach(p -> centroid.add(p.x, p.y, p.z));
 		centroid.div(points.size());

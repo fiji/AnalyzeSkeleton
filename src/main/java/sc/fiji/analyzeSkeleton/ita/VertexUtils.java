@@ -106,7 +106,7 @@ public final class VertexUtils {
 	// region -- Helper methods --
 	private static List<Double> getAngles(final Vertex junction) {
 		final List<Double> angles = new ArrayList<>();
-		final Vector3d centroid = Util.centroid(junction.getPoints());
+		final Vector3d centroid = PointUtils.centroid(junction.getPoints());
 		final List<Edge> branches = junction.getBranches();
 		for (int i = 0; i < branches.size() - 1; i++) {
 			for (int j = i + 1; j < branches.size(); j++) {
@@ -125,7 +125,7 @@ public final class VertexUtils {
 		final Vector3d centroid, final Edge edge)
 	{
 		final List<Point> points = edge.getOppositeVertex(vertex).getPoints();
-		final Vector3d endPoint = Util.centroid(points);
+		final Vector3d endPoint = PointUtils.centroid(points);
 		return endPoint.sub(centroid);
 	}
 	// endregion

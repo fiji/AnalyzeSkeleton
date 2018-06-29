@@ -333,8 +333,8 @@ public final class GraphPruning {
 	private static void euclideanDistance(final Edge e,
 		final double[] voxelSize)
 	{
-		final Vector3d centre = Util.centroid(e.getV1().getPoints());
-		final Vector3d centre2 = Util.centroid(e.getV2().getPoints());
+		final Vector3d centre = PointUtils.centroid(e.getV1().getPoints());
+		final Vector3d centre2 = PointUtils.centroid(e.getV2().getPoints());
 		centre.sub(centre2);
 		final double l = length(centre, voxelSize);
 		e.setLength(l);
@@ -606,7 +606,7 @@ public final class GraphPruning {
 	static Vertex getClusterCentre(final Set<Vertex> cluster) {
 		final Collection<Point> points = cluster.stream().flatMap(c -> c.getPoints()
 			.stream()).collect(toList());
-		final Vector3d centroid = Util.centroid(points);
+		final Vector3d centroid = PointUtils.centroid(points);
 		final int[] coordinates = realToIntegerCoordinate(centroid);
 		final Vertex vertex = new Vertex();
 		vertex.addPoint(new Point(coordinates[0], coordinates[1], coordinates[2]));
