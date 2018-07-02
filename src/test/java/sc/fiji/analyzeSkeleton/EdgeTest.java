@@ -10,7 +10,7 @@ import org.junit.Test;
 /**
  * Tests for {@link Edge}
  *
- * @author Richard Domander
+ * @author Richard Domander (Royal Veterinary College, London)
  */
 public class EdgeTest {
 

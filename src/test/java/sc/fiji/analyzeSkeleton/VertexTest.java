@@ -11,7 +11,7 @@ import org.junit.Test;
 /**
  * Tests for {@link Vertex}
  *
- * @author Richard Domander
+ * @author Richard Domander (Royal Veterinary College, London)
  */
 public class VertexTest {
 
