@@ -675,6 +675,23 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	{
 		return this.shortestPathPoints;
 	}
+		/**
+	 * Get the list of endpoints in the skeleton image per tree.
+	 * @return array with the lists of endpoints
+	 */
+	public ArrayList<Point>[] getEndPointsTree()
+	{
+		return this.endPointsTree;
+	}
+	/**
+	 * Get the list of endpoints in the skeleton image.
+	 * @return array with the endpoints
+	 */
+	public ArrayList<Point> getEndPoints()
+	{
+		return this.listOfEndPoints;
+	}
+
 
 	/**
 	 * A simpler standalone running method, for analysis without pruning
