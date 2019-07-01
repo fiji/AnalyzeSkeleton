@@ -98,7 +98,7 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/fiji/AnalzyeSkeleton</connection>
+		<connection>scm:git:git://github.com/fiji/AnalyzeSkeleton</connection>
 		<developerConnection>scm:git:git@github.com:fiji/AnalyzeSkeleton</developerConnection>
 		<tag>HEAD</tag>
 		<url>https://github.com/fiji/AnalyzeSkeleton</url>
