@@ -2320,11 +2320,12 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	 * @param point2 second point coordinates
 	 * @return distance (in the corresponding units)
 	 */
-	private double calculateDistance(Point point1, Point point2) 
+	public double calculateDistance(Point point1, Point point2) 
 	{
-		return Math.sqrt(  Math.pow( (point1.x - point2.x) * this.imRef.getCalibration().pixelWidth, 2) 
-				          + Math.pow( (point1.y - point2.y) * this.imRef.getCalibration().pixelHeight, 2)
-				          + Math.pow( (point1.z - point2.z) * this.imRef.getCalibration().pixelDepth, 2));
+		final double dx = (point1.x - point2.x) * this.imRef.getCalibration().pixelWidth;
+		final double dy = (point1.y - point2.y) * this.imRef.getCalibration().pixelHeight;
+		final double dz = (point1.z - point2.z) * this.imRef.getCalibration().pixelDepth;
+		return Math.sqrt(dx * dx + dy * dy + dz * dz);
 	}
 
 	// -----------------------------------------------------------------------
@@ -2349,9 +2350,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		if (indexOfLast < 5){
 			poi = indexOfLast;
 		}
-		return Math.sqrt(  Math.pow( (Points.get(poi).x - Points.get(0).x) * this.imRef.getCalibration().pixelWidth, 2) 
-		          + Math.pow( (Points.get(poi).y - Points.get(0).y) * this.imRef.getCalibration().pixelHeight, 2)
-		          + Math.pow( (Points.get(poi).z - Points.get(0).z) * this.imRef.getCalibration().pixelDepth, 2))/poi;
+		return calculateDistance(Points.get(poi), Points.get(0))/poi;
 	}
 
 	// -----------------------------------------------------------------------
