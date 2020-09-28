@@ -1387,6 +1387,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	private void showResults() 
 	{
 		final ResultsTable rt = new ResultsTable();
+		rt.showRowNumbers( true );
 
 		final String[] head = {"Skeleton", "# Branches","# Junctions", "# End-point voxels",
 						 "# Junction voxels","# Slab voxels","Average Branch Length", 
@@ -1424,6 +1425,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		{
 			// New results table
 			final ResultsTable extra_rt = new ResultsTable();
+			rt.showRowNumbers( true );
 
 			final String[] extra_head = {"Branch", "Skeleton ID", 
 							"Branch length","V1 x", "V1 y",
