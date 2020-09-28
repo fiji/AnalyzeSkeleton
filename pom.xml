@@ -5,17 +5,17 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>17.1.1</version>
+		<version>26.0.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>AnalyzeSkeleton_</artifactId>
-	<version>3.2.2-SNAPSHOT</version>
+	<version>3.4.2-SNAPSHOT</version>
 
 	<name>Analyze Skeleton</name>
 	<description>Analysis of 2D and 3D skeleton images.</description>
-	<url>http://imagej.net/AnalyzeSkeleton</url>
+	<url>https://imagej.net/AnalyzeSkeleton</url>
 	<inceptionYear>2008</inceptionYear>
 	<organization>
 		<name>Fiji</name>
@@ -33,7 +33,7 @@
 		<developer>
 			<id>iarganda</id>
 			<name>Ignacio Arganda-Carreras</name>
-			<url>http://imagej.net/User:Iarganda</url>
+			<url>https://imagej.net/User:Iarganda</url>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -47,7 +47,7 @@
 		<developer>
 			<id>ctrueden</id>
 			<name>Curtis Rueden</name>
-			<url>http://imagej.net/User:Rueden</url>
+			<url>https://imagej.net/User:Rueden</url>
 			<roles>
 				<role>maintainer</role>
 			</roles>
@@ -56,45 +56,49 @@
 	<contributors>
 		<contributor>
 			<name>Johannes Schindelin</name>
-			<url>http://imagej.net/User:Schindelin</url>
+			<url>https://imagej.net/User:Schindelin</url>
 			<properties><id>dscho</id></properties>
 		</contributor>
 		<contributor>
 			<name>Richard Domander</name>
-			<url>http://imagej.net/User:Rdom</url>
+			<url>https://imagej.net/User:Rdom</url>
 			<properties><id>rimadoma</id></properties>
 		</contributor>
 		<contributor>
 			<name>Jan Eglinger</name>
-			<url>http://imagej.net/User:Eglinger</url>
+			<url>https://imagej.net/User:Eglinger</url>
 			<properties><id>imagejan</id></properties>
 		</contributor>
 		<contributor>
 			<name>Tiago Ferreira</name>
-			<url>http://imagej.net/User:Tiago</url>
+			<url>https://imagej.net/User:Tiago</url>
 			<properties><id>tferr</id></properties>
 		</contributor>
 		<contributor>
 			<name>Mark Hiner</name>
-			<url>http://imagej.net/User:Hinerm</url>
+			<url>https://imagej.net/User:Hinerm</url>
 			<properties><id>hinerm</id></properties>
 		</contributor>
 		<contributor>
 			<name>Daniel Hornung</name>
-			<url>http://imagej.net/User:Hornung</url>
+			<url>https://imagej.net/User:Hornung</url>
 		</contributor>
 		<contributor><name>Huub Hovens</name></contributor>
+		<contributor>
+			<name>Alessandro Felder</name>
+			<properties><id>alessandrofelder</id></properties>
+		</contributor>
 	</contributors>
 
 	<mailingLists>
 		<mailingList>
-			<name>ImageJ Forum</name>
-			<archive>http://forum.imagej.net/</archive>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tags/fiji</archive>
 		</mailingList>
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/fiji/AnalzyeSkeleton</connection>
+		<connection>scm:git:git://github.com/fiji/AnalyzeSkeleton</connection>
 		<developerConnection>scm:git:git@github.com:fiji/AnalyzeSkeleton</developerConnection>
 		<tag>HEAD</tag>
 		<url>https://github.com/fiji/AnalyzeSkeleton</url>
@@ -114,14 +118,14 @@
 		<license.copyrightOwners>Ignacio Arganda-Carreras.</license.copyrightOwners>
 		<license.projectName>AnalyzeSkeleton_ plugin for ImageJ.</license.projectName>
 
-		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
-		<releaseProfiles>deploy-to-imagej</releaseProfiles>
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 	</properties>
 
 	<repositories>
 		<repository>
-			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
+			<id>scijava.public</id>
+			<url>https://maven.scijava.org/content/groups/public</url>
 		</repository>
 	</repositories>
 
@@ -130,6 +134,16 @@
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
+		</dependency>
+
+		<!-- Other dependencies -->
+		<dependency>
+			<groupId>org.joml</groupId>
+			<artifactId>joml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2</artifactId>
 		</dependency>
 
         <!-- Test dependencies -->

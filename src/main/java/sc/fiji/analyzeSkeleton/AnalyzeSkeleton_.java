@@ -675,6 +675,23 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	{
 		return this.shortestPathPoints;
 	}
+		/**
+	 * Get the list of endpoints in the skeleton image per tree.
+	 * @return array with the lists of endpoints
+	 */
+	public ArrayList<Point>[] getEndPointsTree()
+	{
+		return this.endPointsTree;
+	}
+	/**
+	 * Get the list of endpoints in the skeleton image.
+	 * @return array with the endpoints
+	 */
+	public ArrayList<Point> getEndPoints()
+	{
+		return this.listOfEndPoints;
+	}
+
 
 	/**
 	 * A simpler standalone running method, for analysis without pruning
@@ -1709,10 +1726,6 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 						double color = properties[2];
 						double length_ra = properties[3];
 
-
-						// Increase total length of branches
-						branchLength += length;
-
 						// Increase number of branches
 						if(length != 0)
 						{
@@ -1768,6 +1781,14 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 							if(debug)
 								IJ.log("adding branch from " + initialVertex.getPoints().get(0) + " to " + this.auxFinalVertex.getPoints().get(0));
 							this.graph[iTree].addEdge(new Edge(initialVertex, this.auxFinalVertex, this.slabList, length, color3rd, color, length_ra));
+							// Increase total length of branches
+							branchLength += length;
+
+							// update maximum branch length
+							if(length > this.maximumBranchLength[iTree])
+							{
+								this.maximumBranchLength[iTree] = length;
+							}
 						}
 					}
 					else
@@ -2301,11 +2322,12 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 	 * @param point2 second point coordinates
 	 * @return distance (in the corresponding units)
 	 */
-	private double calculateDistance(Point point1, Point point2) 
+	public double calculateDistance(Point point1, Point point2) 
 	{
-		return Math.sqrt(  Math.pow( (point1.x - point2.x) * this.imRef.getCalibration().pixelWidth, 2) 
-				          + Math.pow( (point1.y - point2.y) * this.imRef.getCalibration().pixelHeight, 2)
-				          + Math.pow( (point1.z - point2.z) * this.imRef.getCalibration().pixelDepth, 2));
+		final double dx = (point1.x - point2.x) * this.imRef.getCalibration().pixelWidth;
+		final double dy = (point1.y - point2.y) * this.imRef.getCalibration().pixelHeight;
+		final double dz = (point1.z - point2.z) * this.imRef.getCalibration().pixelDepth;
+		return Math.sqrt(dx * dx + dy * dy + dz * dz);
 	}
 
 	// -----------------------------------------------------------------------
@@ -2330,9 +2352,7 @@ public class AnalyzeSkeleton_ implements PlugInFilter, DialogListener
 		if (indexOfLast < 5){
 			poi = indexOfLast;
 		}
-		return Math.sqrt(  Math.pow( (Points.get(poi).x - Points.get(0).x) * this.imRef.getCalibration().pixelWidth, 2) 
-		          + Math.pow( (Points.get(poi).y - Points.get(0).y) * this.imRef.getCalibration().pixelHeight, 2)
-		          + Math.pow( (Points.get(poi).z - Points.get(0).z) * this.imRef.getCalibration().pixelDepth, 2))/poi;
+		return calculateDistance(Points.get(poi), Points.get(0))/poi;
 	}
 
 	// -----------------------------------------------------------------------
