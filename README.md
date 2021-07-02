@@ -1,4 +1,4 @@
-[![](https://travis-ci.org/fiji/AnalyzeSkeleton.svg?branch=master)](https://travis-ci.org/fiji/AnalyzeSkeleton)
+[![](https://github.com/fiji/AnalyzeSkeleton/actions/workflows/build-main.yml/badge.svg)](https://github.com/fiji/AnalyzeSkeleton/actions/workflows/build-main.yml)
 
 AnalyzeSkeleton
 ===============
