@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>26.0.0</version>
+		<version>45.1.0</version>
 		<relativePath />
 	</parent>
 
@@ -113,6 +113,7 @@
 	</ciManagement>
 
 	<properties>
+		<scijava.jvm.version>8</scijava.jvm.version>
 		<package-name>sc.fiji.analyzeSkeleton</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>Ignacio Arganda-Carreras.</license.copyrightOwners>
