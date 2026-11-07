@@ -1,4 +1,4 @@
-[![](https://github.com/fiji/AnalyzeSkeleton/actions/workflows/build-main.yml/badge.svg)](https://github.com/fiji/AnalyzeSkeleton/actions/workflows/build-main.yml)
+[![Build Status](https://github.com/fiji/AnalyzeSkeleton/actions/workflows/build.yml/badge.svg)](https://github.com/fiji/AnalyzeSkeleton/actions/workflows/build.yml)
 
 AnalyzeSkeleton
 ===============
